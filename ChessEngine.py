@@ -1,5 +1,4 @@
 import copy
-import numpy as np
 
 
 class GameState:
@@ -7,7 +6,7 @@ class GameState:
     def __init__(self):
 
         # 0 = empty, 1 = pawn, 2 = knight, 3 = bishop, 4 = rook, 5 = queen, 6 = king, same for black + 8
-        self.board = np.array([
+        self.board = [
             [12, 10, 11, 13, 14, 11, 10, 12],
             [9, 9, 9, 9, 9, 9, 9, 9],
             [0, 0, 0, 0, 0, 0, 0, 0],
@@ -16,7 +15,7 @@ class GameState:
             [0, 0, 0, 0, 0, 0, 0, 0],
             [1, 1, 1, 1, 1, 1, 1, 1],
             [4, 2, 3, 5, 6, 3, 2, 4]
-        ])
+        ]
 
         # State of the game
         self.whiteToMove = True
@@ -494,20 +493,9 @@ class GameState:
         numPositions = 0
 
         for move in validMoves:
-            # print(self.currentCastleRights)
-            # print(self.castleRightsLog)
             self.makeMove(move)
-            # print(move)
-            # print("Après move", self.currentCastleRights)
-            # print("Après move log", self.castleRightsLog)
-            # if depth == 2:
-            #     print(len(self.getValidMoves()), self.getValidMoves())
             numPositions += self.numberOfMovesWithDepth(depth - 1)
             self.undoMove()
-            # self.getValidMoves()
-            # castleRight1 = self.currentCastleRights
-            # if castleRight0 != castleRight1:
-            #     print(move, depth, castleRight0, castleRight1)
 
         return numPositions
 

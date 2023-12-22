@@ -3,6 +3,7 @@ import time
 
 gs = ChessEngine.GameState()
 gs.fenToBoard("2r1k2r/pppq1Npp/2bppb2/1N6/1n4n1/2BPPB2/PPPQ1PPP/R4K1R w k - 1 14")
+# best time so far with depth of 4 : 48.0
 # gs.makeMove(ChessEngine.Move((1, 5), (0, 7), gs.board))
 
 
