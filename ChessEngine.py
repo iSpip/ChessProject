@@ -589,7 +589,8 @@ class Move:
         return False
 
     def __repr__(self):
-        return f'{self.cols_to_files[self.startCol]}{self.rows_to_ranks[self.startRow]}{self.cols_to_files[self.endCol]}{self.rows_to_ranks[self.endRow]}'
+        return f'{self.cols_to_files[self.startCol]}{self.rows_to_ranks[self.startRow]}' \
+               f'{self.cols_to_files[self.endCol]}{self.rows_to_ranks[self.endRow]}'
 
     def getChessNotation(self):
         return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
