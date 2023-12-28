@@ -6,6 +6,7 @@ p.init()
 p.mixer.init()
 moveSound = p.mixer.Sound('sounds/move.mp3')
 captureSound = p.mixer.Sound('sounds/capture.mp3')
+checkmateSound = p.mixer.Sound('sounds/checkmate.mp3')
 
 # Constants
 WIDTH = HEIGHT = 750
@@ -20,7 +21,7 @@ IMAGES = {}
 def loadImages():
     pieces = [1, 4, 2, 3, 6, 5, 9, 12, 10, 11, 14, 13]
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load("images/" + str(piece) + ".png"), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.smoothscale(p.image.load("images/" + str(piece) + ".png"), (SQ_SIZE, SQ_SIZE))
 
 
 def main():
@@ -37,6 +38,7 @@ def main():
     running = True
     squareSelected = ()     # no square selected at first
     playerClicks = []
+    checkmateSound.play()
 
     while running:
         for e in p.event.get():
@@ -88,7 +90,11 @@ def main():
             validMoves = gs.getValidMoves()
             moveMade = False
 
+            if gs.checkmate:
+                checkmateSound.play()
+
         drawGameState(screen, gs, validMoves, squareSelected)
+
         clock.tick(MAX_FPS)
         p.display.flip()
 
@@ -98,26 +104,25 @@ def highlightPossibleSquares(screen, gs, validMoves, squareSelected):
         r, c = squareSelected
         allyColor = 0 if gs.whiteToMove else 1
         if ChessEngine.isAlliedPiece(gs.board[r][c], allyColor):
-            s = p.Surface((SQ_SIZE, SQ_SIZE))
-            s.set_alpha(130)    # transparency
-            s.fill(p.Color(10, 80, 10))
-            screen.blit(s, (c * SQ_SIZE, r * SQ_SIZE))
+            startingSquare = p.Surface((SQ_SIZE, SQ_SIZE))
+            startingSquare.set_alpha(130)    # transparency
+            startingSquare.fill(p.Color(10, 80, 10))
+            screen.blit(startingSquare, (c * SQ_SIZE, r * SQ_SIZE))
 
-            s2 = p.Surface((SQ_SIZE, SQ_SIZE), p.SRCALPHA)
-            s2.fill((0, 0, 0, 0))
-            p.draw.circle(s2, p.Color(20, 120, 20, 130), (SQ_SIZE // 2, SQ_SIZE // 2), SQ_SIZE // 7)
-            # s.fill(p.Color(30, 150, 30))
+            possibleSquare = p.Surface((SQ_SIZE, SQ_SIZE), p.SRCALPHA)
+            possibleSquare.fill((0, 0, 0, 0))
+            p.draw.circle(possibleSquare, p.Color(10, 80, 10, 130), (SQ_SIZE / 2, SQ_SIZE / 2), SQ_SIZE / 7)
 
-            s3 = p.Surface((SQ_SIZE, SQ_SIZE), p.SRCALPHA)
-            s3.fill((20, 120, 20, 130))
-            p.draw.circle(s3, p.Color(0, 0, 0, 0), (SQ_SIZE // 2, SQ_SIZE // 2), SQ_SIZE / 1.8)
+            possibleCapture = p.Surface((SQ_SIZE, SQ_SIZE), p.SRCALPHA)
+            possibleCapture.fill((20, 120, 20, 130))
+            p.draw.circle(possibleCapture, p.Color(0, 0, 0, 0), (SQ_SIZE / 2, SQ_SIZE / 2), SQ_SIZE / 1.8)
 
             for move in validMoves:
                 if move.startRow == r and move.startCol == c:
                     if gs.board[move.endRow][move.endCol] == 0:
-                        screen.blit(s2, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
+                        screen.blit(possibleSquare, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
                     else:
-                        screen.blit(s3, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
+                        screen.blit(possibleCapture, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
 
 
 def highlightLastMove(screen, gs):
@@ -136,10 +141,10 @@ def highlightCheck(screen, gs):
     if gs.inCheck:
         kingSquare = gs.whiteKingLocation if gs.whiteToMove else gs.blackKingLocation
         r, c = kingSquare
-        s = p.Surface((SQ_SIZE, SQ_SIZE))
-        s.set_alpha(130)  # transparency
-        s.fill(p.Color(180, 0, 0))  # 225, 205, 0 bien, lichess
-        screen.blit(s, (c * SQ_SIZE, r * SQ_SIZE))
+        checkSquare = p.Surface((SQ_SIZE, SQ_SIZE))
+        checkSquare.set_alpha(130)  # transparency
+        checkSquare.fill(p.Color(180, 0, 0))
+        screen.blit(checkSquare, (c * SQ_SIZE, r * SQ_SIZE))
 
 
 def drawGameState(screen, gs, validMoves, squareSelected):
@@ -156,9 +161,6 @@ def drawBoard(screen, squareSelected):
         for c in range(DIMENSION):
             color = colors[((r + c) % 2)]
             p.draw.rect(screen, color, p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
-    # if len(squareSelected) == 2:
-    #     p.draw.rect(screen, (30, 90, 30),
-    #                 p.Rect(squareSelected[1] * SQ_SIZE, squareSelected[0] * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
 def drawPieces(screen, board):
