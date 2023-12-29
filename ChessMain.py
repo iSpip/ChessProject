@@ -40,7 +40,7 @@ def main():
     squareSelected = ()     # no square selected at first
     playerClicks = []
     checkmateSound.play()
-    playerWhite = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
+    playerWhite = 1    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
     playerBlack = 2
 
     while running:

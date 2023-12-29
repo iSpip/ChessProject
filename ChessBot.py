@@ -11,7 +11,6 @@ def findRandomMove(validMoves):
 
 def findBestMove(gs, validMoves, allyColor):
     turnMultiplier = 1 if gs.whiteToMove else -1
-    bestScore = - CHECKMATE
     opponentMinMaxScore = CHECKMATE
     bestMove = None
     random.shuffle(validMoves)
@@ -27,7 +26,7 @@ def findBestMove(gs, validMoves, allyColor):
             elif gs.stalemate:
                 score = STALEMATE
             else:
-                score = scoreMaterial(gs.board, allyColor)
+                score = - turnMultiplier * scoreMaterial(gs.board, allyColor)
             if score > opponentMaxScore:
                 opponentMaxScore = score
             gs.undoMove()
@@ -43,6 +42,6 @@ def scoreMaterial(board, allyColor):
     for row in board:
         for square in row:
             score += pieceValue[square]
-    score = score if allyColor == 0 else -score
+    # score = score if allyColor == 0 else -score
     return score
 
