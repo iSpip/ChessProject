@@ -40,11 +40,11 @@ def main():
     squareSelected = ()     # no square selected at first
     playerClicks = []
     checkmateSound.play()
-    playerWhiteHuman = True    # True = Human, False = Bot
-    playerBlackHuman = False
+    playerWhite = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
+    playerBlack = 2
 
     while running:
-        isHumanTurn = (gs.whiteToMove and playerWhiteHuman) or (not gs.whiteToMove and playerBlackHuman)
+        isHumanTurn = (gs.whiteToMove and playerWhite == 0) or (not gs.whiteToMove and playerBlack == 0)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
@@ -93,17 +93,25 @@ def main():
                     moveMade = True
 
                 elif e.key == p.K_s:
-                    playerWhiteHuman = True
-                    playerBlackHuman = True
+                    playerWhite = True
+                    playerBlack = True
 
                 elif e.key == p.K_r:
-                    playerWhiteHuman = False
-                    playerBlackHuman = False
+                    playerWhite = False
+                    playerBlack = False
 
         if not (gs.checkmate or gs.stalemate) and not isHumanTurn:
-            # botMove = ChessBot.findRandomMove(validMoves)
-            botMove = ChessBot.findBestMove(gs, validMoves)
+            allyColor = 0 if gs.whiteToMove else 1
+            botSelected = playerWhite if allyColor == 0 else playerBlack
+            botMove = None
+            if botSelected == 1:
+                botMove = ChessBot.findRandomMove(validMoves)
+            elif botSelected == 2:
+                botMove = ChessBot.findBestMove(gs, validMoves, allyColor)
+                if botMove is None:
+                    botMove = ChessBot.findRandomMove(validMoves)
             gs.makeMove(botMove)
+            p.time.delay(200)
             moveMade = True
 
         if moveMade:
@@ -112,7 +120,6 @@ def main():
 
             if gs.checkmate or gs.stalemate:
                 checkmateSound.play()
-                print(gs.moveLog)
 
         drawGameState(screen, gs, validMoves, squareSelected)
 

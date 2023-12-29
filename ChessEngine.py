@@ -422,7 +422,7 @@ class GameState:
                                 break
                     else:  # enemy piece
                         if (pieceType == 1 and j == 1 and ((allyColor == 0 and 0 <= i <= 1) or
-                                                           (allyColor == 0 and 0 <= i <= 1))) or \
+                                                           (allyColor == 1 and 2 <= i <= 3))) or \
                                 (pieceType == 3 and 0 <= i <= 3) or \
                                 (pieceType == 4 and 4 <= i <= 7) or \
                                 (pieceType == 5):
