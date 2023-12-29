@@ -342,18 +342,22 @@ class GameState:
 
     def validKingSquare(self, startRow, startCol, endRow, endCol, allyColor):
         validKingSquareBool = False
+        enemyKingLocation = ()
 
         if 0 <= endRow <= 7 and 0 <= endCol <= 7:
             endPiece = self.board[endRow][endCol]
             if not isAlliedPiece(endPiece, allyColor):
                 if allyColor == 0:
                     self.whiteKingLocation = (endRow, endCol)
+                    enemyKingLocation = self.blackKingLocation
                 else:
                     self.blackKingLocation = (endRow, endCol)
+                    enemyKingLocation = self.whiteKingLocation
                 inCheck, pins, checks = self.checkForPinsAndChecks()
 
                 if not inCheck:
-                    validKingSquareBool = True
+                    if (abs(enemyKingLocation[0] - endRow) > 1) or (abs(enemyKingLocation[1] - endCol) > 1):
+                        validKingSquareBool = True
 
                 #   place back the king at its original destination
                 if allyColor == 0:

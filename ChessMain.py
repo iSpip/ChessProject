@@ -1,5 +1,6 @@
 import pygame as p
 import ChessEngine
+import ChessBot
 
 # Initialisation of Pygame
 p.init()
@@ -39,45 +40,50 @@ def main():
     squareSelected = ()     # no square selected at first
     playerClicks = []
     checkmateSound.play()
+    playerWhiteHuman = True    # True = Human, False = Bot
+    playerBlackHuman = False
 
     while running:
+        isHumanTurn = (gs.whiteToMove and playerWhiteHuman) or (not gs.whiteToMove and playerBlackHuman)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
 
             # mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
-                location = p.mouse.get_pos()    # (x, y) location of the mouse
-                col = location[0]//SQ_SIZE
-                row = location[1]//SQ_SIZE
-                if squareSelected == (row, col):    # user clicked on the same square
-                    squareSelected = ()
-                    playerClicks = []
-                else:
-                    squareSelected = (row, col)
-                    playerClicks.append(squareSelected)
-
-                if len(playerClicks) == 2:
-                    move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    for i in range(len(validMoves)):
-                        if move == validMoves[i]:
-                            isCapture = False
-                            if gs.board[move.endRow][move.endCol] != 0 or validMoves[i].isEnPassantMove:
-                                isCapture = True
-
-                            gs.makeMove(validMoves[i])
-
-                            if isCapture:
-                                captureSound.play()
-                            else:
-                                moveSound.play()
-
-                            moveMade = True
-                            squareSelected = ()     # reset user click
-                            playerClicks = []
-                            break
-                    if not moveMade:
-                        playerClicks = [squareSelected]
+                if isHumanTurn:     # he added also a game over boolean
+                    squareSelected, playerClicks, moveMade = humanTurn(gs, validMoves, squareSelected, playerClicks, moveMade)
+                    # location = p.mouse.get_pos()    # (x, y) location of the mouse
+                    # col = location[0]//SQ_SIZE
+                    # row = location[1]//SQ_SIZE
+                    # if squareSelected == (row, col):    # user clicked on the same square
+                    #     squareSelected = ()
+                    #     playerClicks = []
+                    # else:
+                    #     squareSelected = (row, col)
+                    #     playerClicks.append(squareSelected)
+                    #
+                    # if len(playerClicks) == 2:
+                    #     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    #     for i in range(len(validMoves)):
+                    #         if move == validMoves[i]:
+                    #             isCapture = False
+                    #             if gs.board[move.endRow][move.endCol] != 0 or validMoves[i].isEnPassantMove:
+                    #                 isCapture = True
+                    #
+                    #             gs.makeMove(validMoves[i])
+                    #
+                    #             if isCapture:
+                    #                 captureSound.play()
+                    #             else:
+                    #                 moveSound.play()
+                    #
+                    #             moveMade = True
+                    #             squareSelected = ()     # reset user click
+                    #             playerClicks = []
+                    #             break
+                    #     if not moveMade:
+                    #         playerClicks = [squareSelected]
 
             # key handler
             elif e.type == p.KEYDOWN:
@@ -86,17 +92,67 @@ def main():
                     squareSelected = ()
                     moveMade = True
 
+                elif e.key == p.K_s:
+                    playerWhiteHuman = True
+                    playerBlackHuman = True
+
+                elif e.key == p.K_r:
+                    playerWhiteHuman = False
+                    playerBlackHuman = False
+
+        if not (gs.checkmate or gs.stalemate) and not isHumanTurn:
+            # botMove = ChessBot.findRandomMove(validMoves)
+            botMove = ChessBot.findBestMove(gs, validMoves)
+            gs.makeMove(botMove)
+            moveMade = True
+
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
 
-            if gs.checkmate:
+            if gs.checkmate or gs.stalemate:
                 checkmateSound.play()
+                print(gs.moveLog)
 
         drawGameState(screen, gs, validMoves, squareSelected)
 
         clock.tick(MAX_FPS)
         p.display.flip()
+
+
+def humanTurn(gs, validMoves, squareSelected, playerClicks, moveMade):
+    location = p.mouse.get_pos()  # (x, y) location of the mouse
+    col = location[0] // SQ_SIZE
+    row = location[1] // SQ_SIZE
+    if squareSelected == (row, col):  # user clicked on the same square
+        squareSelected = ()
+        playerClicks = []
+    else:
+        squareSelected = (row, col)
+        playerClicks.append(squareSelected)
+
+    if len(playerClicks) == 2:
+        move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+        for i in range(len(validMoves)):
+            if move == validMoves[i]:
+                isCapture = False
+                if gs.board[move.endRow][move.endCol] != 0 or validMoves[i].isEnPassantMove:
+                    isCapture = True
+
+                gs.makeMove(validMoves[i])
+
+                if isCapture:
+                    captureSound.play()
+                else:
+                    moveSound.play()
+
+                moveMade = True
+                squareSelected = ()  # reset user click
+                playerClicks = []
+                break
+        if not moveMade:
+            playerClicks = [squareSelected]
+    return squareSelected, playerClicks, moveMade
 
 
 def highlightPossibleSquares(screen, gs, validMoves, squareSelected):
