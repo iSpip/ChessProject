@@ -40,8 +40,8 @@ def main():
     squareSelected = ()     # no square selected at first
     playerClicks = []
     checkmateSound.play()
-    playerWhiteConstant = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
-    playerBlackConstant = 2
+    playerWhiteConstant = 3    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
+    playerBlackConstant = 4
     playerWhite = playerWhiteConstant
     playerBlack = playerBlackConstant
 
@@ -80,7 +80,15 @@ def main():
             if botSelected == 1:
                 botMove = ChessBot.findRandomMove(validMoves)
             elif botSelected == 2:
+                botMove = ChessBot.findBestMoveV2(gs, validMoves)
+                if botMove is None:
+                    botMove = ChessBot.findRandomMove(validMoves)
+            elif botSelected == 3:
                 botMove = ChessBot.findBestMoveV3(gs, validMoves)
+                if botMove is None:
+                    botMove = ChessBot.findRandomMove(validMoves)
+            elif botSelected == 4:
+                botMove = ChessBot.findBestMoveV4(gs, validMoves)
                 if botMove is None:
                     botMove = ChessBot.findRandomMove(validMoves)
             gs.makeMove(botMove)
@@ -90,7 +98,7 @@ def main():
             validMoves = gs.getValidMoves()
             moveMade = False
 
-            if not playerWhiteConstant != 0 and not playerBlackConstant != 0:
+            if playerWhiteConstant != 0 and playerBlackConstant != 0:
                 p.time.delay(500)
 
             if gs.checkmate or gs.stalemate:

@@ -1,8 +1,10 @@
 import random
 import MapBonuses as mb
 
-pieceValue = {0: 0, 1: 1, 2: 3, 3: 3.2, 4: 5, 5: 9, 6: 0, 9: -1, 10: -3, 11: -3.5, 12: -5, 13: -9, 14: 0}
-CHECKMATE = 1000
+pieceValue = {0: 0,
+              1: 100, 2: 320, 3: 330, 4: 500, 5: 900, 6: 20000,
+              9: -100, 10: -320, 11: -330, 12: -500, 13: -900, 14: -20000}
+CHECKMATE = 100000
 STALEMATE = 0
 DEPTH = 4
 
@@ -46,11 +48,13 @@ def findBestMove(gs, validMoves, allyColor):
 
 
 def findBestMoveV2(gs, validMoves):
-    global bestMove
-    bestMove = None
+    global bestMoveV2, counterV2
+    bestMoveV2 = None
+    counterV2 = 0
     random.shuffle(validMoves)
     findMoveNegaMax(gs, validMoves, DEPTH, 1 if gs.whiteToMove else -1)
-    return bestMove
+    print(counterV2)
+    return bestMoveV2
 
 
 def findBestMoveV3(gs, validMoves):
@@ -86,8 +90,58 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier)
     return maxScore
 
 
+def findBestMoveV4(gs, validMoves):
+    global bestMoveV4, counterV4, hash_tableV4
+    bestMoveV4 = None
+    counterV4 = 0
+    hash_tableV4 = {}
+    random.shuffle(validMoves)
+    findMoveNegaMaxAlphaBetaV4(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1, gs.zobristHash)
+    print(counterV4)
+    return bestMoveV4
+
+def findMoveNegaMaxAlphaBetaV4(gs, validMoves, depth, alpha, beta, turnMultiplier, hash_value):
+    global bestMoveV4, counterV4, hash_tableV4
+    counterV4 += 1
+
+    if hash_value in hash_tableV4 and hash_tableV4[hash_value]['depth'] >= depth:
+        return hash_tableV4[hash_value]['score']
+
+    if depth == 0:
+        score = turnMultiplier * evaluateBoard(gs)
+        hash_tableV4[hash_value] = {'score': score, 'depth': depth}
+        return score
+
+    maxScore = - CHECKMATE
+    for move in validMoves:
+        gs.makeMove(move)
+        hash_value = gs.zobristHash
+        possibleMoves = gs.getValidMoves()
+        score = - findMoveNegaMaxAlphaBetaV4(gs, possibleMoves, depth - 1, -beta, -alpha, -turnMultiplier, gs.zobristHash)
+        if score > maxScore:
+            maxScore = score
+            if depth == DEPTH:
+                bestMoveV4 = move
+        gs.undoMove()
+        if maxScore > alpha:    # pruning
+            alpha = maxScore
+        if alpha >= beta:
+            break
+
+    # Store the maxScore in hash_table
+    hash_tableV4[hash_value] = {'score': maxScore, 'depth': depth}
+
+    return maxScore
+
+
+def orderMoves(validMoves):
+    for move in validMoves:
+        return
+
+
 def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
-    global bestMove
+    global bestMoveV2, counterV2
+    counterV2 += 1
     if depth == 0:
         return turnMultiplier * evaluateBoard(gs)
 
@@ -99,9 +153,9 @@ def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
         if score > maxScore:
             maxScore = score
             if depth == DEPTH:
-                bestMove = move
+                bestMoveV2 = move
         gs.undoMove()
-    return bestMove
+    return maxScore
 
 
 def evaluateBoard(gs):

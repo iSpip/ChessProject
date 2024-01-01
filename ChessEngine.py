@@ -1,7 +1,10 @@
 import copy
+import Zobrist
 
 
 class GameState:
+
+    zobrist_hash = Zobrist.ChessHash()
 
     def __init__(self):
 
@@ -33,13 +36,16 @@ class GameState:
         self.enPassantPossible = ()  # Coordinates of the square where en passant is possible
         self.currentCastleRights = CastleRights(True, True, True, True)     # wks, wqs, bks, bqs
 
-        # Logs to undo moves
+        # Logs to undo moves. Better idea would be to create a list of Game States.
         self.moveLog = []
         self.castleRightsLog = [copy.deepcopy(CastleRights(self.currentCastleRights.wks, self.currentCastleRights.wqs,
                                                            self.currentCastleRights.bks, self.currentCastleRights.bqs))]
+        self.enPassantLog = [self.enPassantPossible]
 
         self.moveFunctions = {1: self.getPawnMoves, 2: self.getKnightMoves, 3: self.getBishopMoves,
                               4: self.getRookMoves, 5: self.getQueenMoves, 6: self.getKingMoves}
+
+        self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights, self.enPassantPossible)
 
     def __repr__(self):
         return f'{self.board}'
@@ -65,6 +71,8 @@ class GameState:
         else:
             self.enPassantPossible = ()
 
+        self.enPassantLog.append(self.enPassantPossible)
+
         # Castling
         if move.isCastleMove:
             if move.endCol - move.startCol == 2:  # Kingside castle
@@ -85,6 +93,9 @@ class GameState:
         if move.pieceMoved == 14:
             self.blackKingLocation = (move.endRow, move.endCol)
 
+        self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights, self.enPassantPossible)
+        # print(self.zobristHash)
+
         self.whiteToMove = not self.whiteToMove
 
     def undoMove(self):
@@ -101,10 +112,13 @@ class GameState:
             if move.isEnPassantMove:
                 self.board[move.endRow][move.endCol] = 0
                 self.board[move.startRow][move.endCol] = move.pieceCaptured
-                self.enPassantPossible = (move.endRow, move.endCol)
+                # self.enPassantPossible = (move.endRow, move.endCol)
 
-            if move.pieceMoved % 8 == 1 and abs(move.startRow - move.endRow) == 2:
-                self.enPassantPossible = ()
+            # if move.pieceMoved % 8 == 1 and abs(move.startRow - move.endRow) == 2:
+            #     self.enPassantPossible = ()
+
+            self.enPassantLog.pop()
+            self.enPassantPossible = self.enPassantLog[-1]
 
             if move.isCastleMove:
                 if move.endCol - move.startCol == 2:  # kingside castle
@@ -120,6 +134,9 @@ class GameState:
             # print("Apres undo", self.castleRightsLog)
             self.whiteToMove = not self.whiteToMove
 
+            self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights,
+                                                                self.enPassantPossible)
+            # print(self.zobristHash)
             self.checkmate = False
             self.stalemate = False
 
