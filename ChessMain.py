@@ -40,8 +40,10 @@ def main():
     squareSelected = ()     # no square selected at first
     playerClicks = []
     checkmateSound.play()
-    playerWhite = 1    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
-    playerBlack = 2
+    playerWhiteConstant = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
+    playerBlackConstant = 2
+    playerWhite = playerWhiteConstant
+    playerBlack = playerBlackConstant
 
     while running:
         isHumanTurn = (gs.whiteToMove and playerWhite == 0) or (not gs.whiteToMove and playerBlack == 0)
@@ -52,38 +54,8 @@ def main():
             # mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
                 if isHumanTurn:     # he added also a game over boolean
-                    squareSelected, playerClicks, moveMade = humanTurn(gs, validMoves, squareSelected, playerClicks, moveMade)
-                    # location = p.mouse.get_pos()    # (x, y) location of the mouse
-                    # col = location[0]//SQ_SIZE
-                    # row = location[1]//SQ_SIZE
-                    # if squareSelected == (row, col):    # user clicked on the same square
-                    #     squareSelected = ()
-                    #     playerClicks = []
-                    # else:
-                    #     squareSelected = (row, col)
-                    #     playerClicks.append(squareSelected)
-                    #
-                    # if len(playerClicks) == 2:
-                    #     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    #     for i in range(len(validMoves)):
-                    #         if move == validMoves[i]:
-                    #             isCapture = False
-                    #             if gs.board[move.endRow][move.endCol] != 0 or validMoves[i].isEnPassantMove:
-                    #                 isCapture = True
-                    #
-                    #             gs.makeMove(validMoves[i])
-                    #
-                    #             if isCapture:
-                    #                 captureSound.play()
-                    #             else:
-                    #                 moveSound.play()
-                    #
-                    #             moveMade = True
-                    #             squareSelected = ()     # reset user click
-                    #             playerClicks = []
-                    #             break
-                    #     if not moveMade:
-                    #         playerClicks = [squareSelected]
+                    squareSelected, playerClicks, moveMade = humanTurn(gs, validMoves, squareSelected,
+                                                                       playerClicks, moveMade)
 
             # key handler
             elif e.type == p.KEYDOWN:
@@ -93,30 +65,33 @@ def main():
                     moveMade = True
 
                 elif e.key == p.K_s:
-                    playerWhite = True
-                    playerBlack = True
+                    playerWhite = 0
+                    playerBlack = 0
+                    isHumanTurn = True
 
                 elif e.key == p.K_r:
-                    playerWhite = False
-                    playerBlack = False
+                    playerWhite = playerWhiteConstant
+                    playerBlack = playerBlackConstant
 
-        if not (gs.checkmate or gs.stalemate) and not isHumanTurn:
+        if not (gs.checkmate or gs.stalemate) and not isHumanTurn and not moveMade:
             allyColor = 0 if gs.whiteToMove else 1
             botSelected = playerWhite if allyColor == 0 else playerBlack
             botMove = None
             if botSelected == 1:
                 botMove = ChessBot.findRandomMove(validMoves)
             elif botSelected == 2:
-                botMove = ChessBot.findBestMove(gs, validMoves, allyColor)
+                botMove = ChessBot.findBestMoveV3(gs, validMoves)
                 if botMove is None:
                     botMove = ChessBot.findRandomMove(validMoves)
             gs.makeMove(botMove)
-            p.time.delay(200)
             moveMade = True
 
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
+
+            if not playerWhiteConstant != 0 and not playerBlackConstant != 0:
+                p.time.delay(500)
 
             if gs.checkmate or gs.stalemate:
                 checkmateSound.play()
@@ -211,14 +186,14 @@ def highlightCheck(screen, gs):
 
 
 def drawGameState(screen, gs, validMoves, squareSelected):
-    drawBoard(screen, squareSelected)
+    drawBoard(screen)
     highlightCheck(screen, gs)
     highlightLastMove(screen, gs)
     highlightPossibleSquares(screen, gs, validMoves, squareSelected)
     drawPieces(screen, gs.board)
 
 
-def drawBoard(screen, squareSelected):
+def drawBoard(screen):
     colors = [BLANC, NOIR]
     for r in range(DIMENSION):
         for c in range(DIMENSION):
