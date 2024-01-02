@@ -9,6 +9,7 @@ STALEMATE = 0
 DEPTH = 3
 
 
+
 def findRandomMove(validMoves):
     return validMoves[random.randint(0, len(validMoves) - 1)]
 
@@ -47,21 +48,21 @@ def findBestMove(gs, validMoves, allyColor):
     return bestMove
 
 
-def findBestMoveV2(gs, validMoves):
+def findBestMoveV2(gs, validMoves, depth):
     global bestMoveV2, counterV2
     bestMoveV2 = None
     counterV2 = 0
     random.shuffle(validMoves)
-    findMoveNegaMax(gs, validMoves, DEPTH, 1 if gs.whiteToMove else -1)
+    findMoveNegaMax(gs, validMoves, depth, 1 if gs.whiteToMove else -1)
     print(counterV2)
     return bestMoveV2
 
 
-def findBestMoveV3(gs, validMoves):
+def findBestMoveV3(gs, validMoves, depth):
     global bestMoveV3, counterV3
     bestMoveV3 = None
     counterV3 = 0
-    findMoveNegaMaxAlphaBetaV3(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    findMoveNegaMaxAlphaBetaV3(gs, validMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     print(counterV3)
     return bestMoveV3
 
@@ -89,12 +90,12 @@ def findMoveNegaMaxAlphaBetaV3(gs, validMoves, depth, alpha, beta, turnMultiplie
     return maxScore
 
 
-def findBestMoveV4(gs, validMoves):
+def findBestMoveV4(gs, validMoves, depth):
     global bestMoveV4, counterV4, hash_tableV4
     bestMoveV4 = None
     counterV4 = 0
     hash_tableV4 = {}
-    findMoveNegaMaxAlphaBetaV4(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1, gs.zobristHash)
+    findMoveNegaMaxAlphaBetaV4(gs, validMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1, gs.zobristHash)
     print(counterV4)
     return bestMoveV4
 
@@ -132,13 +133,13 @@ def findMoveNegaMaxAlphaBetaV4(gs, validMoves, depth, alpha, beta, turnMultiplie
     return maxScore
 
 
-def findBestMoveV5(gs, validMoves):
+def findBestMoveV5(gs, validMoves, depth):
     global bestMoveV5, counterV5, hash_tableV5
     bestMoveV5 = None
     counterV5 = 0
     hash_tableV5 = {}
     sortedMoves = orderMoves(gs, validMoves)
-    findMoveNegaMaxAlphaBetaV5(gs, sortedMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1, gs.zobristHash)
+    findMoveNegaMaxAlphaBetaV5(gs, sortedMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1, gs.zobristHash)
     print(counterV5)
     return bestMoveV5
 
@@ -213,6 +214,16 @@ def findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, alpha, beta, turnMultiplie
     return maxScore
 
 
+botSelected = {
+    1: findRandomMove,
+    2: findBestMoveV2,
+    3: findBestMoveV3,
+    4: findBestMoveV4,
+    5: findBestMoveV5,
+    6: findBestMoveV6
+}
+
+
 def orderMoves(gs, validMoves):
     moves_with_score = []
 
@@ -238,11 +249,11 @@ def orderMoves(gs, validMoves):
 
         moves_with_score.append((move, moveScoreGuess))
 
-    moves_with_score.sort(key=lambda x: x[1], reverse=True)
-    # if gs.whiteToMove:
-    #     moves_with_score.sort(key=lambda x: x[1], reverse=True)
-    # else:
-    #     moves_with_score.sort(key=lambda x: x[1])
+    # moves_with_score.sort(key=lambda x: x[1], reverse=True)
+    if gs.whiteToMove:
+        moves_with_score.sort(key=lambda x: x[1], reverse=False)
+    else:
+        moves_with_score.sort(key=lambda x: x[1], reverse=True)
     sorted_moves = [move for move, _ in moves_with_score]
 
     return sorted_moves

@@ -77,36 +77,34 @@ def main():
             allyColor = 0 if gs.whiteToMove else 1
             botSelected = playerWhite if allyColor == 0 else playerBlack
             botMove = None
-            if botSelected == 1:
-                botMove = ChessBot.findRandomMove(validMoves)
-            elif botSelected == 2:
-                botMove = ChessBot.findBestMoveV2(gs, validMoves)
-                if botMove is None:
-                    botMove = ChessBot.findRandomMove(validMoves)
-            elif botSelected == 3:
-                botMove = ChessBot.findBestMoveV3(gs, validMoves)
-                if botMove is None:
-                    botMove = ChessBot.findRandomMove(validMoves)
-            elif botSelected == 4:
-                botMove = ChessBot.findBestMoveV4(gs, validMoves)
-                if botMove is None:
-                    botMove = ChessBot.findRandomMove(validMoves)
-            elif botSelected == 5:
-                botMove = ChessBot.findBestMoveV5(gs, validMoves)
-                if botMove is None:
-                    botMove = ChessBot.findRandomMove(validMoves)
-            elif botSelected == 6:
-                botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
-                # if botMove is None:
-                #     botMove = ChessBot.findRandomMove(validMoves)
-                if gs.whiteToMove:
-                    botMove = ChessBot.findBestMoveV6(gs, validMoves, 2)
-                    if botMove is None:
-                        botMove = ChessBot.findRandomMove(validMoves)
-                else:
-                    botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
-                    if botMove is None:
-                        botMove = ChessBot.findRandomMove(validMoves)
+            selectedBotFunction = ChessBot.botSelected.get(botSelected, ChessBot.findRandomMove)
+            botMove = selectedBotFunction(gs, validMoves, 3)
+            # if botSelected == 1:
+            #     botMove = ChessBot.findRandomMove(validMoves)
+            # elif botSelected == 2:
+            #     botMove = ChessBot.findBestMoveV2(gs, validMoves, 3)
+            #
+            # elif botSelected == 3:
+            #     botMove = ChessBot.findBestMoveV3(gs, validMoves, 3)
+            #
+            # elif botSelected == 4:
+            #     botMove = ChessBot.findBestMoveV4(gs, validMoves, 3)
+            #
+            # elif botSelected == 5:
+            #     botMove = ChessBot.findBestMoveV5(gs, validMoves, 3)
+            #
+            # elif botSelected == 6:
+            #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
+            #     # if botMove is None:
+            #     #     botMove = ChessBot.findRandomMove(validMoves)
+            #     if gs.whiteToMove:
+            #         botMove = ChessBot.findBestMoveV6(gs, validMoves, 2)
+            #         if botMove is None:
+            #             botMove = ChessBot.findRandomMove(validMoves)
+            #     else:
+            #         botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
+            #         if botMove is None:
+            #             botMove = ChessBot.findRandomMove(validMoves)
             gs.makeMove(botMove)
             moveMade = True
 
