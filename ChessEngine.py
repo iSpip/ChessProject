@@ -47,6 +47,13 @@ class GameState:
 
         self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights, self.enPassantPossible)
 
+        # self.whitePawnLocations = [(6, 0), (6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6), (6, 7)]
+        # self.blackPawnLocations = [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7)]
+        self.whitePawnAttackingSquares = [(5, 1), (5, 0), (5, 2), (5, 1), (5, 3), (5, 2), (5, 4), (5, 3), (5, 5), (5, 4), (5, 6), (5, 5), (5, 7), (5, 6)]
+        self.blackPawnAttackingSquares = [(2, 1), (2, 0), (2, 2), (2, 1), (2, 3), (2, 2), (2, 4), (2, 3), (2, 5), (2, 4), (2, 6), (2, 5), (2, 7), (2, 6)]
+        self.whitePawnAttackingSquaresLog = [[(5, 1), (5, 0), (5, 2), (5, 1), (5, 3), (5, 2), (5, 4), (5, 3), (5, 5), (5, 4), (5, 6), (5, 5), (5, 7), (5, 6)]]
+        self.blackPawnAttackingSquaresLog = [[(2, 1), (2, 0), (2, 2), (2, 1), (2, 3), (2, 2), (2, 4), (2, 3), (2, 5), (2, 4), (2, 6), (2, 5), (2, 7), (2, 6)]]
+
     def __repr__(self):
         return f'{self.board}'
 
@@ -54,6 +61,11 @@ class GameState:
         self.board[move.startRow][move.startCol] = 0
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)
+
+        # Update pawn attacking squares
+        self.updatePawnAttackingSquares(move)
+        self.whitePawnAttackingSquaresLog.append(copy.deepcopy(self.whitePawnAttackingSquares))
+        self.blackPawnAttackingSquaresLog.append(copy.deepcopy(self.blackPawnAttackingSquares))
 
         # Pawn promotion
         if move.isPawnPromotion:
@@ -71,7 +83,7 @@ class GameState:
         else:
             self.enPassantPossible = ()
 
-        self.enPassantLog.append(self.enPassantPossible)
+        self.enPassantLog.append(copy.deepcopy(self.enPassantPossible))
 
         # Castling
         if move.isCastleMove:
@@ -117,6 +129,12 @@ class GameState:
             # if move.pieceMoved % 8 == 1 and abs(move.startRow - move.endRow) == 2:
             #     self.enPassantPossible = ()
 
+            self.whitePawnAttackingSquaresLog.pop()
+            self.whitePawnAttackingSquares = self.whitePawnAttackingSquaresLog[-1]
+            self.blackPawnAttackingSquaresLog.pop()
+            self.blackPawnAttackingSquares = self.blackPawnAttackingSquaresLog[-1]
+
+
             self.enPassantLog.pop()
             self.enPassantPossible = self.enPassantLog[-1]
 
@@ -131,7 +149,6 @@ class GameState:
             # undo castling rights
             self.castleRightsLog.pop()
             self.currentCastleRights = copy.deepcopy(self.castleRightsLog[-1])
-            # print("Apres undo", self.castleRightsLog)
             self.whiteToMove = not self.whiteToMove
 
             self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights,
@@ -578,6 +595,77 @@ class GameState:
             self.enPassantPossible = ()
         else:
             self.enPassantPossible = (Move.ranks_to_rows[enPassantSquare[1]], Move.files_to_cols[enPassantSquare[0]])
+
+    def updatePawnAttackingSquares(self, move):
+        # If a pawn moves
+        if move.pieceMoved == 1:
+            # Remove squares not attacked anymore
+            if (move.startRow - 1, move.startCol - 1) in self.whitePawnAttackingSquares:
+                self.whitePawnAttackingSquares.remove((move.startRow - 1, move.startCol - 1))
+            if (move.startRow - 1, move.startCol + 1) in self.whitePawnAttackingSquares:
+                self.whitePawnAttackingSquares.remove((move.startRow - 1, move.startCol + 1))
+
+            # Add new attacking squares
+            if not move.isPawnPromotion:
+                if move.endCol >= 1:
+                    self.whitePawnAttackingSquares.append((move.endRow - 1, move.endCol - 1))
+                if move.endCol <= 6:
+                    self.whitePawnAttackingSquares.append((move.endRow - 1, move.endCol + 1))
+
+        elif move.pieceMoved == 9:
+            # Remove squares not attacked anymore
+            if (move.startRow + 1, move.startCol - 1) in self.blackPawnAttackingSquares:
+                self.blackPawnAttackingSquares.remove((move.startRow + 1, move.startCol - 1))
+            if (move.startRow + 1, move.startCol + 1) in self.blackPawnAttackingSquares:
+                self.blackPawnAttackingSquares.remove((move.startRow + 1, move.startCol + 1))
+
+            # Add new attacking squares
+            if not move.isPawnPromotion:
+                if move.endCol >= 1:
+                    self.blackPawnAttackingSquares.append((move.endRow + 1, move.endCol - 1))
+                if move.endCol <= 6:
+                    self.blackPawnAttackingSquares.append((move.endRow + 1, move.endCol + 1))
+
+        # If a pawn is captured
+        pieceCaptured = move.pieceCaptured
+        (pieceCapturedRow, pieceCapturedCol) = (move.endRow, move.endCol)
+        if move.isEnPassantMove:
+            (pieceCapturedRow, pieceCapturedCol) = (move.startRow, move.endCol)
+            if move.pieceMoved == 1:
+                pieceCaptured = 9
+            else:
+                pieceCaptured = 1
+
+        if pieceCaptured == 1:
+            # Remove squares not attacked anymore
+            if (pieceCapturedRow - 1, pieceCapturedCol - 1) in self.whitePawnAttackingSquares:
+                self.whitePawnAttackingSquares.remove((pieceCapturedRow - 1, pieceCapturedCol - 1))
+            if (pieceCapturedRow - 1, pieceCapturedCol + 1) in self.whitePawnAttackingSquares:
+                self.whitePawnAttackingSquares.remove((pieceCapturedRow - 1, pieceCapturedCol + 1))
+
+        elif pieceCaptured == 9:
+            # Remove squares not attacked anymore
+            if (pieceCapturedRow + 1, pieceCapturedCol - 1) in self.blackPawnAttackingSquares:
+                self.blackPawnAttackingSquares.remove((pieceCapturedRow + 1, pieceCapturedCol - 1))
+            if (pieceCapturedRow + 1, pieceCapturedCol + 1) in self.blackPawnAttackingSquares:
+                self.blackPawnAttackingSquares.remove((pieceCapturedRow + 1, pieceCapturedCol + 1))
+
+    # def updatePawnAttackingSquares2(self, allyColor):
+    #     if allyColor == 0:
+    #         self.whitePawnAttackingSquares = []
+    #         for pawn in self.whitePawnLocations:
+    #             if pawn[1] >= 1:
+    #                 self.whitePawnAttackingSquares.append((pawn[0] - 1, pawn[1] - 1))
+    #             if pawn[1] <= 6:
+    #                 self.whitePawnAttackingSquares.append((pawn[0] - 1, pawn[1] + 1))
+    #
+    #     if allyColor == 1:
+    #         self.blackPawnAttackingSquares = []
+    #         for pawn in self.blackPawnLocations:
+    #             if pawn[1] >= 1:
+    #                 self.blackPawnAttackingSquares.append((pawn[0] + 1, pawn[1] - 1))
+    #             if pawn[1] <= 6:
+    #                 self.blackPawnAttackingSquares.append((pawn[0] + 1, pawn[1] + 1))
 
 
 class Move:
