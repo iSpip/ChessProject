@@ -6,7 +6,7 @@ pieceValue = {0: 0,
               9: -100, 10: -320, 11: -330, 12: -500, 13: -900, 14: -20000}
 CHECKMATE = 100000
 STALEMATE = 0
-DEPTH = 4
+DEPTH = 3
 
 
 def findRandomMove(validMoves):
@@ -179,12 +179,12 @@ def findMoveNegaMaxAlphaBetaV5(gs, sortedMoves, depth, alpha, beta, turnMultipli
     return maxScore
 
 
-def findBestMoveV6(gs, validMoves):
+def findBestMoveV6(gs, validMoves, depth):
     global bestMoveV6, counterV6
     bestMoveV6 = None
     counterV6 = 0
     sortedMoves = orderMoves(gs, validMoves)
-    findMoveNegaMaxAlphaBetaV6(gs, sortedMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    findMoveNegaMaxAlphaBetaV6(gs, sortedMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     print(counterV6)
     return bestMoveV6
 
