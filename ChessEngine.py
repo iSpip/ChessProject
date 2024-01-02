@@ -650,22 +650,6 @@ class GameState:
             if (pieceCapturedRow + 1, pieceCapturedCol + 1) in self.blackPawnAttackingSquares:
                 self.blackPawnAttackingSquares.remove((pieceCapturedRow + 1, pieceCapturedCol + 1))
 
-    # def updatePawnAttackingSquares2(self, allyColor):
-    #     if allyColor == 0:
-    #         self.whitePawnAttackingSquares = []
-    #         for pawn in self.whitePawnLocations:
-    #             if pawn[1] >= 1:
-    #                 self.whitePawnAttackingSquares.append((pawn[0] - 1, pawn[1] - 1))
-    #             if pawn[1] <= 6:
-    #                 self.whitePawnAttackingSquares.append((pawn[0] - 1, pawn[1] + 1))
-    #
-    #     if allyColor == 1:
-    #         self.blackPawnAttackingSquares = []
-    #         for pawn in self.blackPawnLocations:
-    #             if pawn[1] >= 1:
-    #                 self.blackPawnAttackingSquares.append((pawn[0] + 1, pawn[1] - 1))
-    #             if pawn[1] <= 6:
-    #                 self.blackPawnAttackingSquares.append((pawn[0] + 1, pawn[1] + 1))
 
 
 class Move:

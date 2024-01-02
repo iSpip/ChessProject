@@ -9,9 +9,14 @@ validMoves = gs.getValidMoves()
 
 
 # timeStart = time.time()
-# print("V3 : ", ChessBot.findBestMoveV3(gs, validMoves))
+# print("V2 : ", ChessBot.findBestMoveV2(gs, validMoves, 3))
 # timeEnd = time.time()
 # print(timeEnd-timeStart)
+
+timeStart = time.time()
+print("V3 : ", ChessBot.findBestMoveV3(gs, validMoves, 4))
+timeEnd = time.time()
+print(timeEnd-timeStart)
 
 # timeStart = time.time()
 # print("V4 : ", ChessBot.findBestMoveV4(gs, validMoves))

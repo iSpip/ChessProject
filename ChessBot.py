@@ -180,12 +180,16 @@ def findMoveNegaMaxAlphaBetaV5(gs, sortedMoves, depth, alpha, beta, turnMultipli
     return maxScore
 
 
-def findBestMoveV6(gs, validMoves, depth):
+def findBestMoveV6(gs, validMoves):
+    print("okkk")
+    print(gs.whiteToMove)
+    print(validMoves[0])
     global bestMoveV6, counterV6
     bestMoveV6 = None
     counterV6 = 0
     sortedMoves = orderMoves(gs, validMoves)
-    findMoveNegaMaxAlphaBetaV6(gs, sortedMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    print(sortedMoves[0])
+    findMoveNegaMaxAlphaBetaV6(gs, sortedMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     print(counterV6)
     return bestMoveV6
 
@@ -244,8 +248,6 @@ def orderMoves(gs, validMoves):
         else:
             if (move.endRow, move.endCol) in gs.whitePawnAttackingSquares:
                 moveScoreGuess -= pieceValue[gs.board[move.startRow][move.startCol]]
-
-
 
         moves_with_score.append((move, moveScoreGuess))
 

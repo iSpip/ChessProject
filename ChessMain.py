@@ -1,6 +1,7 @@
 import pygame as p
 import ChessEngine
 import ChessBot
+import time
 
 # Initialisation of Pygame
 p.init()
@@ -34,13 +35,15 @@ def main():
     # gs.makeMove(ChessEngine.Move((0, 0), (0, 2), gs.board))
 
     validMoves = gs.getValidMoves()
+
     moveMade = False    # flag variable for when a move is made
     loadImages()
     running = True
     squareSelected = ()     # no square selected at first
     playerClicks = []
     checkmateSound.play()
-    playerWhiteConstant = 6    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
+
+    playerWhiteConstant = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
     playerBlackConstant = 6
     playerWhite = playerWhiteConstant
     playerBlack = playerBlackConstant
@@ -75,36 +78,39 @@ def main():
 
         if not (gs.checkmate or gs.stalemate) and not isHumanTurn and not moveMade:
             allyColor = 0 if gs.whiteToMove else 1
-            botSelected = playerWhite if allyColor == 0 else playerBlack
+            # botSelected = playerWhite if allyColor == 0 else playerBlack
+            botSelected = 6
             botMove = None
-            selectedBotFunction = ChessBot.botSelected.get(botSelected, ChessBot.findRandomMove)
-            botMove = selectedBotFunction(gs, validMoves, 3)
-            # if botSelected == 1:
-            #     botMove = ChessBot.findRandomMove(validMoves)
-            # elif botSelected == 2:
-            #     botMove = ChessBot.findBestMoveV2(gs, validMoves, 3)
-            #
-            # elif botSelected == 3:
-            #     botMove = ChessBot.findBestMoveV3(gs, validMoves, 3)
-            #
-            # elif botSelected == 4:
-            #     botMove = ChessBot.findBestMoveV4(gs, validMoves, 3)
-            #
-            # elif botSelected == 5:
-            #     botMove = ChessBot.findBestMoveV5(gs, validMoves, 3)
-            #
-            # elif botSelected == 6:
-            #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
-            #     # if botMove is None:
-            #     #     botMove = ChessBot.findRandomMove(validMoves)
-            #     if gs.whiteToMove:
-            #         botMove = ChessBot.findBestMoveV6(gs, validMoves, 2)
-            #         if botMove is None:
-            #             botMove = ChessBot.findRandomMove(validMoves)
-            #     else:
-            #         botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
-            #         if botMove is None:
-            #             botMove = ChessBot.findRandomMove(validMoves)
+            # selectedBotFunction = ChessBot.botSelected.get(botSelected, ChessBot.findRandomMove)
+            # botMove = selectedBotFunction(gs, validMoves, 4)
+            if botSelected == 1:
+                botMove = ChessBot.findRandomMove(validMoves)
+            elif botSelected == 2:
+                botMove = ChessBot.findBestMoveV2(gs, validMoves, 3)
+
+            elif botSelected == 3:
+                botMove = ChessBot.findBestMoveV3(gs, validMoves, 3)
+
+            elif botSelected == 4:
+                botMove = ChessBot.findBestMoveV4(gs, validMoves, 3)
+
+            elif botSelected == 5:
+                botMove = ChessBot.findBestMoveV5(gs, validMoves, 3)
+
+            elif botSelected == 6:
+                botMove = ChessBot.findBestMoveV6(gs, validMoves)
+                if botMove is None:
+                    botMove = ChessBot.findRandomMove(validMoves)
+
+                # if gs.whiteToMove:
+                #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 2)
+                #     if botMove is None:
+                #         botMove = ChessBot.findRandomMove(validMoves)
+                # else:
+                #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
+                #     if botMove is None:
+                #         botMove = ChessBot.findRandomMove(validMoves)
+
             gs.makeMove(botMove)
             moveMade = True
 
@@ -119,7 +125,6 @@ def main():
                 checkmateSound.play()
 
         drawGameState(screen, gs, validMoves, squareSelected)
-
         clock.tick(MAX_FPS)
         p.display.flip()
 
