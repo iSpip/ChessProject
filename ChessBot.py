@@ -6,7 +6,7 @@ pieceValue = {0: 0,
               9: -100, 10: -320, 11: -330, 12: -500, 13: -900, 14: -20000}
 CHECKMATE = 100000
 STALEMATE = 0
-DEPTH = 2
+DEPTH = 3
 
 
 # def findRandomMove(validMoves):
@@ -199,19 +199,19 @@ DEPTH = 2
 
 
 def findBestMoveV6(gs, validMoves, depth):
-    global bestMoveV6, counterV6
+    global bestMoveV6, counterV6, depthV6
     bestMoveV6 = None
     counterV6 = 0
-    # sortedMoves = orderMoves(gs, validMoves)
-    # print(depth)
-    findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    depthV6 = depth
+    sortedMoves = orderMoves(gs, validMoves)
+    findMoveNegaMaxAlphaBetaV6(gs, sortedMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     print(counterV6)
     print(bestMoveV6)
     return bestMoveV6
 
 
 def findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, alpha, beta, turnMultiplier):
-    global bestMoveV6, counterV6
+    global bestMoveV6, counterV6, depthV6
     counterV6 += 1
 
     if depth == 0:
@@ -220,12 +220,12 @@ def findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, alpha, beta, turnMultiplie
     maxScore = - CHECKMATE
     for move in validMoves:
         gs.makeMove(move)
-        possibleMoves = gs.getValidMoves()
-        # sortedPossibleMoves = orderMoves(gs, possibleMoves)
-        score = - findMoveNegaMaxAlphaBetaV6(gs, possibleMoves, depth - 1, -beta, -alpha, -turnMultiplier)
+        nextPossibleMoves = gs.getValidMoves()
+        sortedPossibleMoves = orderMoves(gs, nextPossibleMoves)
+        score = - findMoveNegaMaxAlphaBetaV6(gs, sortedPossibleMoves, depth - 1, -beta, -alpha, -turnMultiplier)
         if score > maxScore:
             maxScore = score
-            if depth == DEPTH:
+            if depth == depthV6:
                 bestMoveV6 = move
         gs.undoMove()
         if maxScore > alpha:    # pruning
@@ -235,45 +235,59 @@ def findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, alpha, beta, turnMultiplie
     return maxScore
 
 
-# def findBestMoveV7(gs, validMoves, depth):
-#     global bestMoveV7, counterV7
-#     bestMoveV7 = None
-#     counterV7 = 0
-#     sortedMoves = orderMoves(gs, validMoves)
-#     if gs.lateGameWeight < 1000:
-#         depth += 3
-#     elif gs.lateGameWeight < 1400:
-#         depth += 2
-#     elif gs.lateGameWeight < 1700:
-#         depth += 1
-#     print("depth : ", depth)
-#     findMoveNegaMaxAlphaBetaV7(gs, sortedMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
-#     print(counterV7)
-#     return bestMoveV7
-#
-#
-# def findMoveNegaMaxAlphaBetaV7(gs, validMoves, depth, alpha, beta, turnMultiplier):
-#     global bestMoveV7, counterV7
-#     counterV7 += 1
-#     if depth == 0:
-#         return turnMultiplier * evaluateBoard(gs)
-#
-#     maxScore = - CHECKMATE
-#     for move in validMoves:
-#         gs.makeMove(move)
-#         possibleMoves = gs.getValidMoves()
-#         sortedPossibleMoves = orderMoves(gs, possibleMoves)
-#         score = - findMoveNegaMaxAlphaBetaV7(gs, sortedPossibleMoves, depth - 1, -beta, -alpha, -turnMultiplier)
-#         if score > maxScore:
-#             maxScore = score
-#             if depth == DEPTH:
-#                 bestMoveV7 = move
-#         gs.undoMove()
-#         if maxScore > alpha:    # pruning
-#             alpha = maxScore
-#         if alpha >= beta:
-#             break
-#     return maxScore
+def findBestMoveV7(gs, validMoves, depth):
+    global bestMoveV7, counterV7, depthV7
+    bestMoveV7 = None
+    counterV7 = 0
+    enemyMaterial = gs.whiteMaterial if gs.whiteToMove else gs.blackMaterial
+    if enemyMaterial < 150:     # trop lent à +3
+        depth += 2
+    elif gs.lateGameWeight < 1000:
+        depth += 1
+
+    depthV7 = depth
+    print("Depth looked : ", depth)
+    sortedMoves = orderMoves(gs, validMoves)
+    maxScore = findMoveNegaMaxAlphaBetaV7(gs, depth, -2*CHECKMATE, 2*CHECKMATE, 1 if gs.whiteToMove else -1)
+    print(counterV7)
+    print(bestMoveV7)
+    print("MaxScore : ", maxScore)
+    return bestMoveV7
+
+
+def findMoveNegaMaxAlphaBetaV7(gs, depth, alpha, beta, turnMultiplier):
+    global bestMoveV7, counterV7, depthV7
+    counterV7 += 1
+
+    if depth == 0:
+        return turnMultiplier * evaluateBoard(gs)
+
+    nextPossibleMoves = gs.getValidMoves()
+
+    if len(nextPossibleMoves) == 0:
+        if gs.inCheck:
+            print("Checkmate en : ", (depthV7 - depth))
+            return - CHECKMATE - depth
+        return 0
+
+    sortedPossibleMoves = orderMoves(gs, nextPossibleMoves)
+    maxScore = - CHECKMATE
+    for move in sortedPossibleMoves:
+        gs.makeMove(move)
+        score = - findMoveNegaMaxAlphaBetaV7(gs, depth - 1, -beta, -alpha, -turnMultiplier)
+        gs.undoMove()
+
+        if score > maxScore:
+            maxScore = score
+            if depth == depthV7:
+                bestMoveV7 = move
+
+        if maxScore > alpha:    # pruning
+            alpha = maxScore
+        if alpha >= beta:
+            break
+    return maxScore
+
 #
 #
 # botSelected = {
@@ -310,7 +324,6 @@ def orderMoves(gs, validMoves):
 
         moves_with_score.append((move, moveScoreGuess))
 
-    # moves_with_score.sort(key=lambda x: x[1], reverse=True)
     if gs.whiteToMove:
         moves_with_score.sort(key=lambda x: x[1], reverse=False)
     else:
@@ -329,9 +342,17 @@ def evaluateBoard(gs):
             return CHECKMATE
     elif gs.stalemate:
         return STALEMATE
-    materialEvaluation = scoreMaterial(gs.board)
 
-    return materialEvaluation
+    evaluation = scoreMaterial(gs.board)
+
+    if gs.blackMaterial < 350 and gs.whiteToMove:
+        enemyKingLocation = gs.blackKingLocation
+        evaluation += mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
+    elif gs.whiteMaterial < 350 and not gs.whiteToMove:
+        enemyKingLocation = gs.blackKingLocation
+        evaluation -= mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
+
+    return evaluation
 
 
 def scoreMaterial(board):

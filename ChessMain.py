@@ -32,6 +32,7 @@ def main():
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
     # gs.fenToBoard("3k4/4q3/8/8/8/3K4/8/8 w - - 0 1")
+    gs.fenToBoard("8/8/8/8/1q6/3k4/K7/8 w - - 0 1")
     # gs.makeMove(ChessEngine.Move((0, 0), (0, 2), gs.board))
 
     validMoves = gs.getValidMoves()
@@ -45,7 +46,7 @@ def main():
 
     playerWhiteConstant = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
     whiteDepth = 3
-    playerBlackConstant = 6
+    playerBlackConstant = 7
     blackDepth = 3
     playerWhite = playerWhiteConstant
     playerBlack = playerBlackConstant
@@ -88,31 +89,14 @@ def main():
             # botSelected = playerWhite if gs.whiteToMove else playerBlack
             # botMove = None
 
-            # if botSelected == 1:
-            #     botMove = ChessBot.findRandomMove(validMoves)
-            # elif botSelected == 2:
-            #     botMove = ChessBot.findBestMoveV2(gs, validMoves, 3)
-            #
-            # elif botSelected == 3:
-            #     botMove = ChessBot.findBestMoveV3(gs, validMoves, 3)
-            #
-            # elif botSelected == 4:
-            #     botMove = ChessBot.findBestMoveV4(gs, validMoves, 3)
-            #
-            # elif botSelected == 5:
-            #     botMove = ChessBot.findBestMoveV5(gs, validMoves, 3)
-            #
-            # elif botSelected == 6:
-            #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 4)
-            botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
+            botMove = ChessBot.findBestMoveV7(gs, validMoves, 4)
             gs.makeMove(botMove)
             moveMade = True
 
         if moveMade:
             validMoves = gs.getValidMoves()
-            # gs.updateLateGameWeight()
+            gs.updateLateGameWeight()
             moveMade = False
-            print(gs)
 
             # if playerWhiteConstant != 0 and playerBlackConstant != 0:
             #     p.time.delay(500)

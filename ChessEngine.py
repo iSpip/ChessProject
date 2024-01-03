@@ -136,9 +136,6 @@ class GameState:
         self.whiteMaterial = whiteMat
         self.blackMaterial = blackMat
         self.lateGameWeight = whiteMat + blackMat
-        print("whitemat", whiteMat)
-        print(blackMat)
-        print(whiteMat + blackMat)
 
     def undoMove(self):
         # print("Avant undo", self.castleRightsLog)
