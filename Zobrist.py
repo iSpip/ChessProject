@@ -1,10 +1,8 @@
 import random
 
+
 class ChessHash:
     def __init__(self):
-        self.init_hash_values()
-
-    def init_hash_values(self):
         self.piece_keys = {
             # and for castling rights ...
             1: random.getrandbits(64),
@@ -18,6 +16,9 @@ class ChessHash:
         self.table = {}
 
         self.pieces = [1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14]
+        self.init_hash_values()
+
+    def init_hash_values(self):
         for i in range(64):
             self.table[i] = {}
             for piece in self.pieces:

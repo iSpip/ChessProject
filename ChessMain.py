@@ -31,7 +31,7 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
-    # gs.fenToBoard("r3k2r/pppq1ppp/2bppb2/1N4N1/1n4n1/2BPPB2/PPPQ1PPP/R4K1R b kq - 17 12")
+    # gs.fenToBoard("3k4/4q3/8/8/8/3K4/8/8 w - - 0 1")
     # gs.makeMove(ChessEngine.Move((0, 0), (0, 2), gs.board))
 
     validMoves = gs.getValidMoves()
@@ -44,12 +44,15 @@ def main():
     checkmateSound.play()
 
     playerWhiteConstant = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
+    whiteDepth = 3
     playerBlackConstant = 6
+    blackDepth = 3
     playerWhite = playerWhiteConstant
     playerBlack = playerBlackConstant
 
     while running:
         isHumanTurn = (gs.whiteToMove and playerWhite == 0) or (not gs.whiteToMove and playerBlack == 0)
+
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
@@ -77,46 +80,39 @@ def main():
                     playerBlack = playerBlackConstant
 
         if not (gs.checkmate or gs.stalemate) and not isHumanTurn and not moveMade:
-            allyColor = 0 if gs.whiteToMove else 1
-            # botSelected = playerWhite if allyColor == 0 else playerBlack
-            botSelected = 6
-            botMove = None
-            # selectedBotFunction = ChessBot.botSelected.get(botSelected, ChessBot.findRandomMove)
-            # botMove = selectedBotFunction(gs, validMoves, 4)
-            if botSelected == 1:
-                botMove = ChessBot.findRandomMove(validMoves)
-            elif botSelected == 2:
-                botMove = ChessBot.findBestMoveV2(gs, validMoves, 3)
+            # if gs.whiteToMove:
+            #     botTurn(gs, validMoves, playerWhite, whiteDepth)
+            # else:
+            #     botTurn(gs, validMoves, playerBlack, blackDepth)
 
-            elif botSelected == 3:
-                botMove = ChessBot.findBestMoveV3(gs, validMoves, 3)
+            # botSelected = playerWhite if gs.whiteToMove else playerBlack
+            # botMove = None
 
-            elif botSelected == 4:
-                botMove = ChessBot.findBestMoveV4(gs, validMoves, 3)
-
-            elif botSelected == 5:
-                botMove = ChessBot.findBestMoveV5(gs, validMoves, 3)
-
-            elif botSelected == 6:
-                botMove = ChessBot.findBestMoveV6(gs, validMoves)
-                if botMove is None:
-                    botMove = ChessBot.findRandomMove(validMoves)
-
-                # if gs.whiteToMove:
-                #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 2)
-                #     if botMove is None:
-                #         botMove = ChessBot.findRandomMove(validMoves)
-                # else:
-                #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
-                #     if botMove is None:
-                #         botMove = ChessBot.findRandomMove(validMoves)
-
+            # if botSelected == 1:
+            #     botMove = ChessBot.findRandomMove(validMoves)
+            # elif botSelected == 2:
+            #     botMove = ChessBot.findBestMoveV2(gs, validMoves, 3)
+            #
+            # elif botSelected == 3:
+            #     botMove = ChessBot.findBestMoveV3(gs, validMoves, 3)
+            #
+            # elif botSelected == 4:
+            #     botMove = ChessBot.findBestMoveV4(gs, validMoves, 3)
+            #
+            # elif botSelected == 5:
+            #     botMove = ChessBot.findBestMoveV5(gs, validMoves, 3)
+            #
+            # elif botSelected == 6:
+            #     botMove = ChessBot.findBestMoveV6(gs, validMoves, 4)
+            botMove = ChessBot.findBestMoveV6(gs, validMoves, 3)
             gs.makeMove(botMove)
             moveMade = True
 
         if moveMade:
             validMoves = gs.getValidMoves()
+            # gs.updateLateGameWeight()
             moveMade = False
+            print(gs)
 
             # if playerWhiteConstant != 0 and playerBlackConstant != 0:
             #     p.time.delay(500)
@@ -162,6 +158,14 @@ def humanTurn(gs, validMoves, squareSelected, playerClicks, moveMade):
         if not moveMade:
             playerClicks = [squareSelected]
     return squareSelected, playerClicks, moveMade
+
+
+def botTurn(gs, validMoves, botSelected, botDepth):
+    selectedBotFunction = ChessBot.botSelected.get(botSelected)
+    botMove = selectedBotFunction(gs, validMoves, botDepth)
+    if botMove is None:
+        botMove = ChessBot.findRandomMove(validMoves)
+    gs.makeMove(botMove)
 
 
 def highlightPossibleSquares(screen, gs, validMoves, squareSelected):
