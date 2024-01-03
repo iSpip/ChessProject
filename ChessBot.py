@@ -239,9 +239,9 @@ def findBestMoveV7(gs, validMoves, depth):
     global bestMoveV7, counterV7, depthV7
     bestMoveV7 = None
     counterV7 = 0
-    enemyMaterial = gs.whiteMaterial if gs.whiteToMove else gs.blackMaterial
-    if enemyMaterial < 150:     # trop lent à +3
-        depth += 2
+    enemyMaterial = gs.blackMaterial if gs.whiteToMove else gs.whiteMaterial
+    if enemyMaterial < 150:     # trop lent à +2
+        depth += 1
     elif gs.lateGameWeight < 1000:
         depth += 1
 
@@ -348,9 +348,13 @@ def evaluateBoard(gs):
     if gs.blackMaterial < 350 and gs.whiteToMove:
         enemyKingLocation = gs.blackKingLocation
         evaluation += mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
+        distanceBetweenKings = abs(enemyKingLocation[0] - gs.whiteKingLocation[0]) + abs(enemyKingLocation[1] - gs.whiteKingLocation[1])
+        evaluation += (15 - distanceBetweenKings) * 20
     elif gs.whiteMaterial < 350 and not gs.whiteToMove:
-        enemyKingLocation = gs.blackKingLocation
+        enemyKingLocation = gs.whiteKingLocation
         evaluation -= mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
+        distanceBetweenKings = abs(enemyKingLocation[0] - gs.blackKingLocation[0]) + abs(enemyKingLocation[1] - gs.blackKingLocation[1])
+        evaluation -= (15 - distanceBetweenKings) * 20
 
     return evaluation
 
