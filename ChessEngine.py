@@ -597,7 +597,7 @@ class GameState:
                     col += 1
 
         # Whose turn it is ?
-        self.whiteToMove = 1 if turn == "w" else 0
+        self.whiteToMove = True if turn == "w" else False
 
         # Castle rights
         if castleRights == "-":
@@ -625,6 +625,8 @@ class GameState:
             self.enPassantPossible = ()
         else:
             self.enPassantPossible = (Move.ranks_to_rows[enPassantSquare[1]], Move.files_to_cols[enPassantSquare[0]])
+
+        self.checkForPinsAndChecks()
 
     def updatePawnAttackingSquares(self, move):
         # If a pawn moves

@@ -236,7 +236,7 @@ def findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, alpha, beta, turnMultiplie
 
 
 def findBestMoveV7(gs, validMoves, depth):
-    global bestMoveV7, counterV7, depthV7
+    global bestMoveV7, counterV7, depthV7, allyColorV7
     bestMoveV7 = None
     counterV7 = 0
     enemyMaterial = gs.blackMaterial if gs.whiteToMove else gs.whiteMaterial
@@ -244,7 +244,7 @@ def findBestMoveV7(gs, validMoves, depth):
         depth += 1
     elif gs.lateGameWeight < 1000:
         depth += 1
-
+    allyColorV7 = 0 if gs.whiteToMove else 1
     depthV7 = depth
     print("Depth looked : ", depth)
     sortedMoves = orderMoves(gs, validMoves)
@@ -256,11 +256,11 @@ def findBestMoveV7(gs, validMoves, depth):
 
 
 def findMoveNegaMaxAlphaBetaV7(gs, depth, alpha, beta, turnMultiplier):
-    global bestMoveV7, counterV7, depthV7
+    global bestMoveV7, counterV7, depthV7, allyColorV7
     counterV7 += 1
 
     if depth == 0:
-        return turnMultiplier * evaluateBoard(gs)
+        return turnMultiplier * evaluateBoard(gs, allyColorV7)
 
     nextPossibleMoves = gs.getValidMoves()
 
@@ -334,7 +334,7 @@ def orderMoves(gs, validMoves):
     return sorted_moves
 
 
-def evaluateBoard(gs):
+def evaluateBoard(gs, allyColor):
     if gs.checkmate:
         if gs.whiteToMove:
             return -CHECKMATE
@@ -343,32 +343,40 @@ def evaluateBoard(gs):
     elif gs.stalemate:
         return STALEMATE
 
-    evaluation = scoreMaterial(gs.board)
-
-    if gs.blackMaterial < 350 and gs.whiteToMove:
+    evaluation = scoreMaterial(gs)
+    # print("wm", gs.whiteMaterial, gs.whiteToMove)
+    if gs.blackMaterial < 350 and allyColor == 0:
         enemyKingLocation = gs.blackKingLocation
         evaluation += mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
         distanceBetweenKings = abs(enemyKingLocation[0] - gs.whiteKingLocation[0]) + abs(enemyKingLocation[1] - gs.whiteKingLocation[1])
         evaluation += (15 - distanceBetweenKings) * 20
-    elif gs.whiteMaterial < 350 and not gs.whiteToMove:
+
+    elif gs.whiteMaterial < 350 and allyColor == 1:
         enemyKingLocation = gs.whiteKingLocation
         evaluation -= mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
+        # print(mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]])
         distanceBetweenKings = abs(enemyKingLocation[0] - gs.blackKingLocation[0]) + abs(enemyKingLocation[1] - gs.blackKingLocation[1])
-        evaluation -= (15 - distanceBetweenKings) * 20
+        evaluation -= (60 - 4 * distanceBetweenKings) * 10
 
     return evaluation
 
 
-def scoreMaterial(board):
+def scoreMaterial(gs):
     score = 0
-    for row in range(len(board)):
-        for col in range(len(board[row])):
-            piece = board[row][col]
+    for row in range(len(gs.board)):
+        for col in range(len(gs.board[row])):
+            piece = gs.board[row][col]
             if piece != 0:
-                if piece > 7:
-                    score += pieceValue[piece] - mb.piece_position_scores[piece][row][col]
+                if gs.blackMaterial < 350 or gs.whiteMaterial < 350:
+                    if piece > 7:
+                        score += pieceValue[piece] - mb.piece_position_scores_late_game[piece][row][col]
+                    else:
+                        score += pieceValue[piece] + mb.piece_position_scores_late_game[piece][row][col]
                 else:
-                    score += pieceValue[piece] + mb.piece_position_scores[piece][row][col]
+                    if piece > 7:
+                        score += pieceValue[piece] - mb.piece_position_scores[piece][row][col]
+                    else:
+                        score += pieceValue[piece] + mb.piece_position_scores[piece][row][col]
     # score = score if allyColor == 0 else -score
     return score
 

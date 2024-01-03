@@ -31,8 +31,9 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
-    gs.fenToBoard("3k4/4q3/8/8/8/3K4/8/8 w - - 0 1")
-    # gs.fenToBoard("8/8/8/8/1q6/3k4/K7/8 w - - 0 1")
+    # gs.fenToBoard("2k5/r7/8/8/3K4/8/8/8 w - - 0 1")
+    # gs.fenToBoard("8/3KP3/8/8/4q3/6k1/8/8 w - - 0 1")
+
     # gs.makeMove(ChessEngine.Move((0, 0), (0, 2), gs.board))
 
     validMoves = gs.getValidMoves()
@@ -53,7 +54,6 @@ def main():
 
     while running:
         isHumanTurn = (gs.whiteToMove and playerWhite == 0) or (not gs.whiteToMove and playerBlack == 0)
-
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
@@ -79,7 +79,6 @@ def main():
                 elif e.key == p.K_r:
                     playerWhite = playerWhiteConstant
                     playerBlack = playerBlackConstant
-
         if not (gs.checkmate or gs.stalemate) and not isHumanTurn and not moveMade:
             # if gs.whiteToMove:
             #     botTurn(gs, validMoves, playerWhite, whiteDepth)

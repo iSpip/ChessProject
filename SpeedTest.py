@@ -32,3 +32,8 @@ timeStart = time.time()
 print("V6 : ", ChessBot.findBestMoveV6(gs, validMoves, 4))
 timeEnd = time.time()
 print(timeEnd-timeStart)
+
+timeStart = time.time()
+print("V7 : ", ChessBot.findBestMoveV7(gs, validMoves, 4))
+timeEnd = time.time()
+print(timeEnd-timeStart)
