@@ -31,7 +31,7 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = ChessEngine.GameState()
-    # gs.fenToBoard("2k5/r7/8/8/3K4/8/8/8 w - - 0 1")
+    gs.fenToBoard("8/8/3nk3/5b2/2K5/8/8/8 w - - 0 1")
     # gs.fenToBoard("8/3KP3/8/8/4q3/6k1/8/8 w - - 0 1")
 
     # gs.makeMove(ChessEngine.Move((0, 0), (0, 2), gs.board))
