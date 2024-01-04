@@ -288,9 +288,74 @@ def findMoveNegaMaxAlphaBetaV7(gs, depth, alpha, beta, turnMultiplier):
     return maxScore
 
 
+def findBestMoveV8(gs, validMoves, depth):
+    global bestMoveV8, counterV8, depthV8, allyColorV8, hashTableV8
+    bestMoveV8 = None
+    counterV8 = 0
+    hashTableV8 = {}
+    enemyMaterial = gs.blackMaterial if gs.whiteToMove else gs.whiteMaterial
+    if enemyMaterial < 150:     # trop lent à +2
+        depth += 1
+    elif gs.lateGameWeight < 1000:
+        depth += 1
+    allyColorV8 = 0 if gs.whiteToMove else 1
+    depthV8 = depth
+    print("Depth looked : ", depth)
+    sortedMoves = orderMoves(gs, validMoves)
+    maxScore = findMoveNegaMaxAlphaBetaV8(gs, depth, -2*CHECKMATE, 2*CHECKMATE, 1 if gs.whiteToMove else -1)
+    print("Positions analyzed : ", counterV8)
+    print("Meilleur coup : ", bestMoveV8)
+    print("Evaluation : ", maxScore)
+    return bestMoveV8
+
+
+def findMoveNegaMaxAlphaBetaV8(gs, depth, alpha, beta, turnMultiplier):
+    global bestMoveV8, counterV8, depthV8, allyColorV8, hashTableV8
+    counterV8 += 1
+    hash_value = gs.zobristHash
+
+    if hash_value in hashTableV8 and hashTableV8[hash_value]['depth'] >= depth:
+        return hashTableV8[hash_value]['score']
+
+    if depth == 0:
+        score = turnMultiplier * evaluateBoard(gs, allyColorV8)
+        hashTableV8[hash_value] = {'score': score, 'depth': depth}
+        return score
+
+    nextPossibleMoves = gs.getValidMoves()
+
+    if len(nextPossibleMoves) == 0:
+        if gs.inCheck:
+            return - CHECKMATE - depth
+        return 0
+
+    sortedPossibleMoves = orderMoves(gs, nextPossibleMoves)
+    maxScore = - CHECKMATE
+    for move in sortedPossibleMoves:
+        gs.makeMove(move)
+        score = - findMoveNegaMaxAlphaBetaV8(gs, depth - 1, -beta, -alpha, -turnMultiplier)
+        gs.undoMove()
+
+        if score > maxScore:
+            maxScore = score
+            if depth == depthV8:
+                bestMoveV8 = move
+
+        if maxScore > alpha:    # pruning
+            alpha = maxScore
+        if alpha >= beta:
+            break
+
+    # Store the maxScore in hash_table
+    hashTableV8[hash_value] = {'score': maxScore, 'depth': depth}
+
+    return maxScore
+
+
 botSelected = {
     1: findRandomMove,
-    7: findBestMoveV7
+    7: findBestMoveV7,
+    8: findBestMoveV8
 }
 
 

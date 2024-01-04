@@ -3,7 +3,7 @@ import ChessBot
 import time
 
 gs = ChessEngine.GameState()
-# gs.fenToBoard("rnbqk2r/4bppp/p2ppn2/1p6/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQkq - 2 9")
+gs.fenToBoard("5k2/8/8/8/8/2R5/2K5/8 w - - 0 1")
 
 validMoves = gs.getValidMoves()
 
@@ -28,12 +28,19 @@ validMoves = gs.getValidMoves()
 # timeEnd = time.time()
 # print(timeEnd-timeStart)
 
+# timeStart = time.time()
+# print("V6 : ", ChessBot.findBestMoveV6(gs, validMoves, 4))
+# timeEnd = time.time()
+# print(timeEnd-timeStart)
+
+# timeStart = time.time()
+# print("V7 : ", ChessBot.findBestMoveV7(gs, validMoves, 7))
+# timeEnd = time.time()
+# print(timeEnd-timeStart)
+
 timeStart = time.time()
-print("V6 : ", ChessBot.findBestMoveV6(gs, validMoves, 4))
+print("V8 : ", ChessBot.findBestMoveV8(gs, validMoves, 8))
 timeEnd = time.time()
 print(timeEnd-timeStart)
 
-timeStart = time.time()
-print("V7 : ", ChessBot.findBestMoveV7(gs, validMoves, 4))
-timeEnd = time.time()
-print(timeEnd-timeStart)
+

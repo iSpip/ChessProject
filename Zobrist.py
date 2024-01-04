@@ -10,7 +10,9 @@ class ChessHash:
             3: random.getrandbits(64),
             4: random.getrandbits(64),
             # en passant rights
-            5: random.getrandbits(64)
+            5: random.getrandbits(64),
+            # whose turn it is ?
+            6: random.getrandbits(64)
         }
 
         self.table = {}
@@ -24,7 +26,7 @@ class ChessHash:
             for piece in self.pieces:
                 self.table[i][piece] = random.getrandbits(64)
 
-    def calculate_hash(self, board, currentCastleRights, enPassantPossible):
+    def calculate_hash(self, board, currentCastleRights, enPassantPossible, whiteToMove):
         hash_value = 0
         for i in range(8):
             for j in range(8):
@@ -43,6 +45,9 @@ class ChessHash:
             hash_value ^= self.piece_keys[4]
         if enPassantPossible != ():     # Not sure that it works well, because it depends on the location ?
             hash_value ^= self.piece_keys[5]
+
+        if whiteToMove:
+            hash_value ^= self.piece_keys[6]
 
         return hash_value
 

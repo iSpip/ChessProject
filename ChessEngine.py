@@ -49,7 +49,7 @@ class GameState:
                               4: self.getRookMoves, 5: self.getQueenMoves, 6: self.getKingMoves}
 
         # Zobrist hash to see whether the position has already been analyzed
-        self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights, self.enPassantPossible)
+        self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights, self.enPassantPossible, self.whiteToMove)
 
         # Keeping track of the squares attacked by pawns to help the move ordering
         self.whitePawnAttackingSquares = [(5, 1), (5, 0), (5, 2), (5, 1), (5, 3), (5, 2), (5, 4),
@@ -117,7 +117,7 @@ class GameState:
         if move.pieceMoved == 14:
             self.blackKingLocation = (move.endRow, move.endCol)
 
-        self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights, self.enPassantPossible)
+        self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights, self.enPassantPossible, self.whiteToMove)
         # print(self.zobristHash)
 
         self.whiteToMove = not self.whiteToMove
@@ -179,7 +179,7 @@ class GameState:
             self.whiteToMove = not self.whiteToMove
 
             self.zobristHash = self.zobrist_hash.calculate_hash(self.board, self.currentCastleRights,
-                                                                self.enPassantPossible)
+                                                                self.enPassantPossible, self.whiteToMove)
             # print(self.zobristHash)
             self.checkmate = False
             self.stalemate = False
