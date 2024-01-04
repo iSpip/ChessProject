@@ -9,8 +9,8 @@ STALEMATE = 0
 DEPTH = 3
 
 
-# def findRandomMove(validMoves):
-#     return validMoves[random.randint(0, len(validMoves) - 1)]
+def findRandomMove(validMoves):
+    return validMoves[random.randint(0, len(validMoves) - 1)]
 #
 #
 # def findBestMove(gs, validMoves, allyColor):
@@ -196,43 +196,43 @@ DEPTH = 3
 #     hash_tableV5[hash_value] = {'score': maxScore, 'depth': depth}
 #
 #     return maxScore
-
-
-def findBestMoveV6(gs, validMoves, depth):
-    global bestMoveV6, counterV6, depthV6
-    bestMoveV6 = None
-    counterV6 = 0
-    depthV6 = depth
-    sortedMoves = orderMoves(gs, validMoves)
-    findMoveNegaMaxAlphaBetaV6(gs, sortedMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
-    print(counterV6)
-    print(bestMoveV6)
-    return bestMoveV6
-
-
-def findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, alpha, beta, turnMultiplier):
-    global bestMoveV6, counterV6, depthV6
-    counterV6 += 1
-
-    if depth == 0:
-        return turnMultiplier * evaluateBoard(gs)
-
-    maxScore = - CHECKMATE
-    for move in validMoves:
-        gs.makeMove(move)
-        nextPossibleMoves = gs.getValidMoves()
-        sortedPossibleMoves = orderMoves(gs, nextPossibleMoves)
-        score = - findMoveNegaMaxAlphaBetaV6(gs, sortedPossibleMoves, depth - 1, -beta, -alpha, -turnMultiplier)
-        if score > maxScore:
-            maxScore = score
-            if depth == depthV6:
-                bestMoveV6 = move
-        gs.undoMove()
-        if maxScore > alpha:    # pruning
-            alpha = maxScore
-        if alpha >= beta:
-            break
-    return maxScore
+#
+#
+# def findBestMoveV6(gs, validMoves, depth):
+#     global bestMoveV6, counterV6, depthV6
+#     bestMoveV6 = None
+#     counterV6 = 0
+#     depthV6 = depth
+#     sortedMoves = orderMoves(gs, validMoves)
+#     findMoveNegaMaxAlphaBetaV6(gs, sortedMoves, depth, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+#     print(counterV6)
+#     print(bestMoveV6)
+#     return bestMoveV6
+#
+#
+# def findMoveNegaMaxAlphaBetaV6(gs, validMoves, depth, alpha, beta, turnMultiplier):
+#     global bestMoveV6, counterV6, depthV6
+#     counterV6 += 1
+#
+#     if depth == 0:
+#         return turnMultiplier * evaluateBoard(gs)
+#
+#     maxScore = - CHECKMATE
+#     for move in validMoves:
+#         gs.makeMove(move)
+#         nextPossibleMoves = gs.getValidMoves()
+#         sortedPossibleMoves = orderMoves(gs, nextPossibleMoves)
+#         score = - findMoveNegaMaxAlphaBetaV6(gs, sortedPossibleMoves, depth - 1, -beta, -alpha, -turnMultiplier)
+#         if score > maxScore:
+#             maxScore = score
+#             if depth == depthV6:
+#                 bestMoveV6 = move
+#         gs.undoMove()
+#         if maxScore > alpha:    # pruning
+#             alpha = maxScore
+#         if alpha >= beta:
+#             break
+#     return maxScore
 
 
 def findBestMoveV7(gs, validMoves, depth):
@@ -249,9 +249,9 @@ def findBestMoveV7(gs, validMoves, depth):
     print("Depth looked : ", depth)
     sortedMoves = orderMoves(gs, validMoves)
     maxScore = findMoveNegaMaxAlphaBetaV7(gs, depth, -2*CHECKMATE, 2*CHECKMATE, 1 if gs.whiteToMove else -1)
-    print(counterV7)
-    print(bestMoveV7)
-    print("MaxScore : ", maxScore)
+    print("Positions analyzed : ", counterV7)
+    print("Meilleur coup : ", bestMoveV7)
+    print("Evaluation : ", maxScore)
     return bestMoveV7
 
 
@@ -266,7 +266,6 @@ def findMoveNegaMaxAlphaBetaV7(gs, depth, alpha, beta, turnMultiplier):
 
     if len(nextPossibleMoves) == 0:
         if gs.inCheck:
-            print("Checkmate en : ", (depthV7 - depth))
             return - CHECKMATE - depth
         return 0
 
@@ -288,20 +287,14 @@ def findMoveNegaMaxAlphaBetaV7(gs, depth, alpha, beta, turnMultiplier):
             break
     return maxScore
 
-#
-#
-# botSelected = {
-#     1: findRandomMove,
-#     2: findBestMoveV2,
-#     3: findBestMoveV3,
-#     4: findBestMoveV4,
-#     5: findBestMoveV5,
-#     6: findBestMoveV6,
-#     7: findBestMoveV7
-# }
+
+botSelected = {
+    1: findRandomMove,
+    7: findBestMoveV7
+}
 
 
-def orderMoves(gs, validMoves):
+def orderMoves(gs, validMoves): # Move ordering to improve the alpha beta pruning efficiency
     moves_with_score = []
 
     for move in validMoves:

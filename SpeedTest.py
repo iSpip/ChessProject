@@ -3,7 +3,7 @@ import ChessBot
 import time
 
 gs = ChessEngine.GameState()
-gs.fenToBoard("rnbqk2r/4bppp/p2ppn2/1p6/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQkq - 2 9")
+# gs.fenToBoard("rnbqk2r/4bppp/p2ppn2/1p6/3NP3/2N1BP2/PPPQ2PP/R3KB1R w KQkq - 2 9")
 
 validMoves = gs.getValidMoves()
 

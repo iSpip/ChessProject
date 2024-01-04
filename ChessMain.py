@@ -20,37 +20,31 @@ NOIR = (181, 136, 99)
 IMAGES = {}
 
 
-def loadImages():
-    pieces = [1, 4, 2, 3, 6, 5, 9, 12, 10, 11, 14, 13]
-    for piece in pieces:
-        IMAGES[piece] = p.transform.smoothscale(p.image.load("images/" + str(piece) + ".png"), (SQ_SIZE, SQ_SIZE))
-
-
 def main():
+    gs = ChessEngine.GameState()
+    # gs.fenToBoard("4kbb1/8/8/8/3K4/8/8/8 w - - 0 1")
+    # gs.fenToBoard("8/3KP3/8/8/4q3/6k1/8/8 w - - 0 1")
+    validMoves = gs.getValidMoves()
+
+    # Player parameters, 0 = Human, 1 = Bot playing random moves, 7 = Best bot
+    playerWhiteConstant = 0
+    whiteDepth = 4
+    playerBlackConstant = 7
+    blackDepth = 4
+    playerWhite = playerWhiteConstant
+    playerBlack = playerBlackConstant
+
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gs = ChessEngine.GameState()
-    gs.fenToBoard("8/8/3nk3/5b2/2K5/8/8/8 w - - 0 1")
-    # gs.fenToBoard("8/3KP3/8/8/4q3/6k1/8/8 w - - 0 1")
-
-    # gs.makeMove(ChessEngine.Move((0, 0), (0, 2), gs.board))
-
-    validMoves = gs.getValidMoves()
-
-    moveMade = False    # flag variable for when a move is made
+    moveMade = False    # Flag variable for when a move is made
     loadImages()
     running = True
-    squareSelected = ()     # no square selected at first
+    squareSelected = ()     # No square selected at first
     playerClicks = []
+    squareSelectedRightClick = ()
+    playerRightClicks = []
     checkmateSound.play()
-
-    playerWhiteConstant = 0    # 0 = Human, 1 = Bot playing random moves, 2 = Better bot
-    whiteDepth = 3
-    playerBlackConstant = 7
-    blackDepth = 3
-    playerWhite = playerWhiteConstant
-    playerBlack = playerBlackConstant
 
     while running:
         isHumanTurn = (gs.whiteToMove and playerWhite == 0) or (not gs.whiteToMove and playerBlack == 0)
@@ -58,15 +52,22 @@ def main():
             if e.type == p.QUIT:
                 running = False
 
-            # mouse handler
+            # Mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
-                if isHumanTurn:     # he added also a game over boolean
-                    squareSelected, playerClicks, moveMade = humanTurn(gs, validMoves, squareSelected,
-                                                                       playerClicks, moveMade)
+                if e.button == 1:
+                    squareSelectedRightClick = ()
+                    playerRightClicks = []
+                    if isHumanTurn:     # he added also a game over boolean
+                        squareSelected, playerClicks, moveMade = humanTurn(gs, validMoves, squareSelected,
+                                                                           playerClicks, moveMade)
+                if e.button == 3:
+                    print("ok")
+                    getRightClicks(squareSelectedRightClick, playerRightClicks)
 
-            # key handler
+            # Key handler
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:
+                    gs.undoMove()
                     gs.undoMove()
                     squareSelected = ()
                     moveMade = True
@@ -79,17 +80,12 @@ def main():
                 elif e.key == p.K_r:
                     playerWhite = playerWhiteConstant
                     playerBlack = playerBlackConstant
+
         if not (gs.checkmate or gs.stalemate) and not isHumanTurn and not moveMade:
-            # if gs.whiteToMove:
-            #     botTurn(gs, validMoves, playerWhite, whiteDepth)
-            # else:
-            #     botTurn(gs, validMoves, playerBlack, blackDepth)
-
-            # botSelected = playerWhite if gs.whiteToMove else playerBlack
-            # botMove = None
-
-            botMove = ChessBot.findBestMoveV7(gs, validMoves, 4)
-            gs.makeMove(botMove)
+            if gs.whiteToMove:
+                botTurn(gs, validMoves, playerWhite, whiteDepth)
+            else:
+                botTurn(gs, validMoves, playerBlack, blackDepth)
             moveMade = True
 
         if moveMade:
@@ -97,7 +93,7 @@ def main():
             gs.updateLateGameWeight()
             moveMade = False
 
-            # if playerWhiteConstant != 0 and playerBlackConstant != 0:
+            # if playerWhiteConstant != 0 and playerBlackConstant != 0: # Slows down the game to see what happens
             #     p.time.delay(500)
 
             if gs.checkmate or gs.stalemate:
@@ -108,6 +104,7 @@ def main():
         p.display.flip()
 
 
+# All functions below are UI related
 def humanTurn(gs, validMoves, squareSelected, playerClicks, moveMade):
     location = p.mouse.get_pos()  # (x, y) location of the mouse
     col = location[0] // SQ_SIZE
@@ -149,6 +146,30 @@ def botTurn(gs, validMoves, botSelected, botDepth):
     if botMove is None:
         botMove = ChessBot.findRandomMove(validMoves)
     gs.makeMove(botMove)
+
+
+def loadImages():
+    pieces = [1, 4, 2, 3, 6, 5, 9, 12, 10, 11, 14, 13]
+    for piece in pieces:
+        IMAGES[piece] = p.transform.smoothscale(p.image.load("images/" + str(piece) + ".png"), (SQ_SIZE, SQ_SIZE))
+
+
+def getRightClicks(squareSelectedRightClick, playerRightClicks):
+    location = p.mouse.get_pos()  # (x, y) location of the mouse
+    col = location[0] // SQ_SIZE
+    row = location[1] // SQ_SIZE
+    if squareSelectedRightClick == (row, col):  # user clicked on the same square
+        squareSelectedRightClick = ()
+        playerRightClicks = []
+    else:
+        squareSelected = (row, col)
+        playerRightClicks.append(squareSelected)
+
+    return squareSelectedRightClick, playerRightClicks
+
+
+def makeArrows(squareSelectedRightClick, playerRightClicks):    # TO DO
+    return
 
 
 def highlightPossibleSquares(screen, gs, validMoves, squareSelected):
