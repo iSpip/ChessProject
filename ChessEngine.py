@@ -1,7 +1,7 @@
 import copy
-
 import ChessBot
 import Zobrist
+import numpy as np
 
 
 class GameState:
@@ -81,8 +81,9 @@ class GameState:
 
         # Pawn promotion
         if move.isPawnPromotion:
+            print("is pawn promotion and promoted piece is : ", move.promotedPiece)
             if self.whiteToMove:
-                self.board[move.endRow][move.endCol] = 5
+                self.board[move.endRow][move.endCol] = move.promotedPiece
             else:
                 self.board[move.endRow][move.endCol] = 13
 
@@ -271,7 +272,13 @@ class GameState:
             if r >= 1:
                 if self.board[r - 1][c] == 0:   # in front
                     if not piecePinned or pinDirection == (-1, 0):
-                        moves.append(Move((r, c), (r - 1, c), self.board))
+                        if r == 1:
+                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=2))
+                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=3))
+                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=4))
+                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=5))
+                        else:
+                            moves.append(Move((r, c), (r - 1, c), self.board))
                         if r == 6 and self.board[r - 2][c] == 0:
                             moves.append(Move((r, c), (r - 2, c), self.board))
                 if c - 1 >= 0:
@@ -691,7 +698,7 @@ class Move:
                      "e": 4, "f": 5, "g": 6, "h": 7}
     cols_to_files = {v: k for k, v in files_to_cols.items()}
 
-    def __init__(self, startSquare, endSquare, board, isEnPassantMove=False, isCastleMove=False):
+    def __init__(self, startSquare, endSquare, board, isEnPassantMove=False, isCastleMove=False, isPawnPromotion=False, promotedPiece=0):
         self.startRow = startSquare[0]
         self.startCol = startSquare[1]
         self.endRow = endSquare[0]
@@ -699,16 +706,17 @@ class Move:
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
 
-        self.isPawnPromotion = False
-        if (self.pieceMoved == 1 and self.endRow == 0) or (self.pieceMoved == 9 and self.endRow == 7):
-            self.isPawnPromotion = True
+        self.isPawnPromotion = isPawnPromotion
+        self.promotedPiece = promotedPiece
+        # if (self.pieceMoved == 1 and self.endRow == 0) or (self.pieceMoved == 9 and self.endRow == 7):
+        #     self.isPawnPromotion = True
         self.isEnPassantMove = isEnPassantMove
         if self.isEnPassantMove:
             self.pieceCaptured = 9 if self.pieceMoved == 1 else 1
 
         self.isCastleMove = isCastleMove
 
-        self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
+        self.moveID = self.startRow * 10000 + self.startCol * 1000 + self.endRow * 100 + self.endCol * 10 + (5 - self.promotedPiece)
 
     def __eq__(self, other):
         if isinstance(other, Move):
