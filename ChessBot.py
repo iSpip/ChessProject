@@ -403,13 +403,13 @@ def evaluateBoard(gs, allyColor):
 
     evaluation = scoreMaterial(gs)
     # print("wm", gs.whiteMaterial, gs.whiteToMove)
-    if gs.blackMaterial < 350 and allyColor == 0:
+    if gs.blackMaterial < 550 and allyColor == 0:
         enemyKingLocation = gs.blackKingLocation
         evaluation += mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
         distanceBetweenKings = abs(enemyKingLocation[0] - gs.whiteKingLocation[0]) + abs(enemyKingLocation[1] - gs.whiteKingLocation[1])
         evaluation += (15 - distanceBetweenKings) * 20
 
-    elif gs.whiteMaterial < 350 and allyColor == 1:
+    elif gs.whiteMaterial < 550 and allyColor == 1:
         enemyKingLocation = gs.whiteKingLocation
         evaluation -= mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]]
         # print(mb.push_king_to_corner[enemyKingLocation[0]][enemyKingLocation[1]])

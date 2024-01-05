@@ -81,11 +81,11 @@ class GameState:
 
         # Pawn promotion
         if move.isPawnPromotion:
-            print("is pawn promotion and promoted piece is : ", move.promotedPiece)
             if self.whiteToMove:
-                self.board[move.endRow][move.endCol] = move.promotedPiece
+                self.board[move.endRow][move.endCol] = move.promotedPieceType
+
             else:
-                self.board[move.endRow][move.endCol] = 13
+                self.board[move.endRow][move.endCol] = move.promotedPieceType + 8
 
         # En passant
         if move.isEnPassantMove:
@@ -273,10 +273,7 @@ class GameState:
                 if self.board[r - 1][c] == 0:   # in front
                     if not piecePinned or pinDirection == (-1, 0):
                         if r == 1:
-                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=2))
-                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=3))
-                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=4))
-                            moves.append(Move((r, c), (r - 1, c), self.board, isPawnPromotion=True, promotedPiece=5))
+                            self.addPawnPromotionMoves(moves, r, c, r - 1, c)
                         else:
                             moves.append(Move((r, c), (r - 1, c), self.board))
                         if r == 6 and self.board[r - 2][c] == 0:
@@ -284,14 +281,20 @@ class GameState:
                 if c - 1 >= 0:
                     if self.board[r - 1][c - 1] > 8:    # enemy piece left front
                         if not piecePinned or pinDirection == (-1, -1):
-                            moves.append(Move((r, c), (r - 1, c - 1), self.board))
+                            if r == 1:
+                                self.addPawnPromotionMoves(moves, r, c, r - 1, c - 1)
+                            else:
+                                moves.append(Move((r, c), (r - 1, c - 1), self.board))
                     elif (r - 1, c - 1) == self.enPassantPossible:
                         if not piecePinned or pinDirection == (-1, -1):
                             moves.append(Move((r, c), (r - 1, c - 1), self.board, isEnPassantMove=True))
                 if c + 1 <= 7:
                     if self.board[r - 1][c + 1] > 8:    # enemy piece right front
                         if not piecePinned or pinDirection == (-1, 1):
-                            moves.append(Move((r, c), (r - 1, c + 1), self.board))
+                            if r == 1:
+                                self.addPawnPromotionMoves(moves, r, c, r - 1, c + 1)
+                            else:
+                                moves.append(Move((r, c), (r - 1, c + 1), self.board))
                     elif (r - 1, c + 1) == self.enPassantPossible:
                         if not piecePinned or pinDirection == (-1, -1):
                             moves.append(Move((r, c), (r - 1, c + 1), self.board, isEnPassantMove=True))
@@ -299,23 +302,38 @@ class GameState:
             if r <= 6:
                 if self.board[r + 1][c] == 0:   # in front
                     if not piecePinned or pinDirection == (1, 0):
-                        moves.append(Move((r, c), (r + 1, c), self.board))
+                        if r == 6:
+                            self.addPawnPromotionMoves(moves, r, c, r + 1, c)
+                        else:
+                            moves.append(Move((r, c), (r + 1, c), self.board))
                         if r == 1 and self.board[r + 2][c] == 0:
                             moves.append(Move((r, c), (r + 2, c), self.board))
                 if c - 1 >= 0:
                     if 0 < self.board[r + 1][c - 1] < 8:    # enemy piece left front
                         if not piecePinned or pinDirection == (1, -1):
-                            moves.append(Move((r, c), (r + 1, c - 1), self.board))
+                            if r == 6:
+                                self.addPawnPromotionMoves(moves, r, c, r + 1, c - 1)
+                            else:
+                                moves.append(Move((r, c), (r + 1, c - 1), self.board))
                     elif (r + 1, c - 1) == self.enPassantPossible:
                         if not piecePinned or pinDirection == (1, -1):
                             moves.append(Move((r, c), (r + 1, c - 1), self.board, isEnPassantMove=True))
                 if c + 1 <= 7:
                     if 0 < self.board[r + 1][c + 1] < 8:    # enemy piece right front
                         if not piecePinned or pinDirection == (1, 1):
-                            moves.append(Move((r, c), (r + 1, c + 1), self.board))
+                            if r == 6:
+                                self.addPawnPromotionMoves(moves, r, c, r + 1, c)
+                            else:
+                                moves.append(Move((r, c), (r + 1, c + 1), self.board))
                     elif (r + 1, c + 1) == self.enPassantPossible:
                         if not piecePinned or pinDirection == (1, 1):
                             moves.append(Move((r, c), (r + 1, c + 1), self.board, isEnPassantMove=True))
+
+    def addPawnPromotionMoves(self, moves, startRow, startCol, endRow, endCol):
+        moves.append(Move((startRow, startCol), (endRow, endCol), self.board, isPawnPromotion=True, promotedPieceType=5))
+        moves.append(Move((startRow, startCol), (endRow, endCol), self.board, isPawnPromotion=True, promotedPieceType=4))
+        moves.append(Move((startRow, startCol), (endRow, endCol), self.board, isPawnPromotion=True, promotedPieceType=3))
+        moves.append(Move((startRow, startCol), (endRow, endCol), self.board, isPawnPromotion=True, promotedPieceType=2))
 
     def getKnightMoves(self, r, c, moves):
         # We check first if the piece is pinned
@@ -698,7 +716,7 @@ class Move:
                      "e": 4, "f": 5, "g": 6, "h": 7}
     cols_to_files = {v: k for k, v in files_to_cols.items()}
 
-    def __init__(self, startSquare, endSquare, board, isEnPassantMove=False, isCastleMove=False, isPawnPromotion=False, promotedPiece=0):
+    def __init__(self, startSquare, endSquare, board, isEnPassantMove=False, isCastleMove=False, isPawnPromotion=False, promotedPieceType=0):
         self.startRow = startSquare[0]
         self.startCol = startSquare[1]
         self.endRow = endSquare[0]
@@ -707,7 +725,7 @@ class Move:
         self.pieceCaptured = board[self.endRow][self.endCol]
 
         self.isPawnPromotion = isPawnPromotion
-        self.promotedPiece = promotedPiece
+        self.promotedPieceType = promotedPieceType
         # if (self.pieceMoved == 1 and self.endRow == 0) or (self.pieceMoved == 9 and self.endRow == 7):
         #     self.isPawnPromotion = True
         self.isEnPassantMove = isEnPassantMove
@@ -716,7 +734,7 @@ class Move:
 
         self.isCastleMove = isCastleMove
 
-        self.moveID = self.startRow * 10000 + self.startCol * 1000 + self.endRow * 100 + self.endCol * 10 + (5 - self.promotedPiece)
+        self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
 
     def __eq__(self, other):
         if isinstance(other, Move):

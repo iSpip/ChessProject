@@ -22,15 +22,15 @@ IMAGES = {}
 
 def main():
     gs = ChessEngine.GameState()
-    # gs.fenToBoard("2k1bb2/8/8/8/4K3/8/8/8 w - - 0 1")
+    gs.fenToBoard("8/8/8/7r/6k1/8/1Q1p2K1/8 w - - 0 1")
     # gs.fenToBoard("8/3KP3/8/8/4q3/6k1/8/8 w - - 0 1")
     validMoves = gs.getValidMoves()
 
     # Player parameters, 0 = Human, 1 = Bot playing random moves, 7 = Best bot
-    playerWhiteConstant = 0
+    playerWhiteConstant = 7
     whiteDepth = 4
-    playerBlackConstant = 0
-    blackDepth = 6
+    playerBlackConstant = 8
+    blackDepth = 5
     playerWhite = playerWhiteConstant
     playerBlack = playerBlackConstant
 
